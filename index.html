@@ -843,7 +843,7 @@ function newQuote(){
   ['tog-free','tog-split','tog-dsc'].forEach(id=>G(id).checked=false);
   ['split-sec','dsc-sec'].forEach(id=>G(id).style.display='none');
   splits=[]; _zId=null;
-  G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true; G('bol-attach-btn').disabled=true;
+  G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true;
   G('z-msg').textContent='';
   setQDate();
   window._zohoRef = '';
@@ -916,7 +916,7 @@ function updateZSt(){
 
 function clearZoho(){
   _zId=null;
-  G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true; G('bol-attach-btn').disabled=true;
+  G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true;
   G('z-msg').textContent='';
 }
 function zmsg(txt,col){G('z-msg').style.color=col||'rgba(255,255,255,.7)';G('z-msg').textContent=txt;}
@@ -932,7 +932,7 @@ async function zLookup(){
       _zId={type:r.record_type,id:r.record_id,num:r.record_number,cust:r.customer_name};
       autoFillFromZoho(r);
       zmsg('✅ Found: '+r.record_number+' — '+r.customer_name,'#7fcc7f');
-      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
+      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false;
       return;
     }
     // Try sales orders
@@ -941,7 +941,7 @@ async function zLookup(){
       _zId={type:r.record_type,id:r.record_id,num:r.record_number,cust:r.customer_name};
       autoFillFromZoho(r);
       zmsg('✅ Found: '+r.record_number+' — '+r.customer_name,'#7fcc7f');
-      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
+      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false;
       return;
     }
     // Try invoices
@@ -950,7 +950,7 @@ async function zLookup(){
       _zId={type:r.record_type,id:r.record_id,num:r.record_number,cust:r.customer_name};
       autoFillFromZoho(r);
       zmsg('✅ Found: '+r.record_number+' — '+r.customer_name,'#7fcc7f');
-      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
+      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false;
       return;
     }
     zmsg('❌ Not found in Zoho. Check the number.','#ff7070');
