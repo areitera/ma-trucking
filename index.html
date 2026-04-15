@@ -821,22 +821,30 @@ function newQuote(){
 
 // ══════════════════ BOL ══════════════════
 function populateBOL(){
-  G('b-cname').value=V('cust-name');
-  G('b-caddr').value=V('cust-address');
-  G('b-cphone').value=V('cust-contact');
-  G('b-cprov').value=V('cust-province')||'AB';
-  G('b-date').value=V('deliv-date');
-  // BOL pieces = pallets (palletized) count; loose pieces shown in description
-  const pals=V('pallets')||'0', pcs=V('pieces')||'0';
-  G('b-pieces').value=pals;
-  G('b-weight').value=V('weight');
-  // Auto-build description from order notes + pieces info
+  G('b-cname').value  = V('cust-name');
+  G('b-caddr').value  = V('cust-address');
+  G('b-cphone').value = V('cust-contact');
+  G('b-cprov').value  = V('cust-province')||'AB';
+  G('b-date').value   = V('deliv-date');
+  // Pallets and pieces
+  const pals=V('pallets')||'0', pcs=parseInt(V('pieces'))||0;
+  G('b-pieces').value = pals;
+  G('b-weight').value = V('weight');
+  // Build description
   const notes=V('order-notes');
-  const pcsNote=parseInt(pcs)>0?' · '+pcs+' loose piece'+(parseInt(pcs)!==1?'s':''):'';
+  const pcsNote=pcs>0?' · '+pcs+' loose piece'+(pcs!==1?'s':''):'';
   G('b-desc').value=(notes?notes+'\n':'')+pals+' pallet'+(parseInt(pals)!==1?'s':'')+pcsNote+'.';
-  G('b-val').value=V('order-val');
+  // Order value → declared value
+  if(V('order-val')) G('b-val').value=V('order-val');
+  // Freight charges default to collect
+  G('b-pay').value='collect';
+  // Shipper phone from settings
   G('b-sphone').value=S.phone;
-  if(window._C){G('b-fchg').value=_C.charge.toFixed(2);G('b-fsc').value=_C.fuel.toFixed(2);}
+  // Freight charges from calculation
+  if(window._C){
+    G('b-fchg').value=_C.charge.toFixed(2);
+    G('b-fsc').value=_C.fuel.toFixed(2);
+  }
 }
 
 function goToBOL(){
@@ -883,26 +891,58 @@ function zmsg(txt,col){G('z-msg').style.color=col||'rgba(255,255,255,.7)';G('z-m
 async function zLookup(){
   const ref=V('z-ref').trim();
   if(!ref){zmsg('Enter a quote number first.','#ffaa55');return;}
-  if(!PROXY_URL){zmsg('Proxy URL not configured. See setup instructions.','#ff7070');return;}
+  if(!PROXY_URL){zmsg('Proxy URL not configured.','#ff7070');return;}
   zmsg('🔍 Looking up '+ref+'…');
   try{
     let r=await proxyRequest('zohoEstimateLookup',{estimateNumber:ref});
-    if(r.estimate_id){
-      _zId={type:'estimate',id:r.estimate_id,num:r.estimate_number,cust:r.customer_name};
-      zmsg('✅ Found: '+_zId.num+' — '+(_zId.cust||''),'#7fcc7f');
+    if(r.record_id){
+      _zId={type:r.record_type,id:r.record_id,num:r.record_number,cust:r.customer_name};
+      autoFillFromZoho(r);
+      zmsg('✅ Found: '+r.record_number+' — '+r.customer_name,'#7fcc7f');
       G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
       return;
     }
     // Try sales orders
     r=await proxyRequest('zohoSalesOrderLookup',{salesOrderNumber:ref});
-    if(r.salesorder_id){
-      _zId={type:'salesorder',id:r.salesorder_id,num:r.salesorder_number,cust:r.customer_name};
-      zmsg('✅ Found sales order: '+_zId.num,'#7fcc7f');
+    if(r.record_id){
+      _zId={type:r.record_type,id:r.record_id,num:r.record_number,cust:r.customer_name};
+      autoFillFromZoho(r);
+      zmsg('✅ Found: '+r.record_number+' — '+r.customer_name,'#7fcc7f');
       G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
       return;
     }
     zmsg('❌ Not found in Zoho. Check the number.','#ff7070');
   }catch(e){zmsg('❌ '+e.message,'#ff7070');}
+}
+
+function autoFillFromZoho(r){
+  // ── Calculator fields ──
+  if(r.customer_name) G('cust-name').value  = r.customer_name;
+  if(r.phone)         G('cust-contact').value = r.phone;
+  else if(r.email)    G('cust-contact').value = r.email;
+  if(r.address)       G('cust-address').value = r.address;
+  if(r.total>0)       G('order-val').value    = r.total.toFixed(2);
+  // Auto-fill pieces from line item quantity if pallets not set
+  if(r.line_items_qty>0 && (parseInt(V('pallets'))||0)===0 && (parseInt(V('pieces'))||0)===0){
+    G('pieces').value = Math.round(r.line_items_qty);
+  }
+
+  // ── BOL fields ──
+  if(r.customer_name) G('b-cname').value   = r.customer_name;
+  if(r.phone)         G('b-cphone').value  = r.phone;
+  if(r.address)       G('b-caddr').value   = r.address;
+  if(r.total>0)       G('b-val').value     = r.total.toFixed(2);
+  if(r.line_items_qty>0) G('b-pieces').value = Math.round(r.line_items_qty);
+  // Freight charges default to collect (customer pays)
+  G('b-pay').value = 'collect';
+  // Province — detect BC from address
+  if(r.address && r.address.toUpperCase().includes('BC')){
+    G('cust-province').value   = 'BC';
+    G('b-cprov').value         = 'BC';
+  }
+
+  // Recalculate with new order value
+  calculate();
 }
 
 async function zPush(){
