@@ -962,27 +962,26 @@ async function zPush(){
   if(!_zId){zmsg('Lookup a quote first.','#ffaa55');return;}
   if(!window._C){zmsg('Calculate a delivery first.','#ffaa55');return;}
   const c=window._C;
-  zmsg('⬆️ Pushing trucking cost to Zoho…');
+  zmsg('⬆️ Adding delivery line item to Zoho…');
   const rtLabel=c.rtOn?'×'+c.rt+' round trip':'×1 one-way';
   const note=[
-    'Delivery Quote: '+(window._zohoRef||'—'),
     'Vehicle: '+c.v.name,
     'Route: Mayerthorpe, AB → '+(V('cust-address')||c.prov),
     'Distance: '+c.km+' km one-way ('+rtLabel+')',
     'Pallets: '+c.pals+(c.pcs>0?' · '+c.pcs+' loose pieces':''),
     c.wt>0?'Est. Weight: '+c.wt.toLocaleString()+' kg':'',
-    'Delivery charge: $'+c.charge.toFixed(2)+' + GST ($'+c.gst.toFixed(2)+')',
     'Fuel surcharge: $'+c.fuel.toFixed(2),
-    'Total incl. GST: $'+c.total.toFixed(2),
     c.free?'** DELIVERY WAIVED **':''
-  ].filter(Boolean).join('\n');
+  ].filter(Boolean).join(' | ');
   try{
     const r=await proxyRequest('zohoUpdateEstimateNotes',{
-      recordType: _zId.type,
-      recordId:   _zId.id,
-      notes:      note
+      recordType:       _zId.type,
+      recordId:         _zId.id,
+      quoteRef:         window._zohoRef||'',
+      chargeBeforeGST:  c.charge,
+      notes:            note
     });
-    if(r.updated||r.code===0) zmsg('✅ Trucking cost pushed to Zoho!','#7fcc7f');
+    if(r.updated||r.code===0) zmsg('✅ Delivery line item added to Zoho!','#7fcc7f');
     else zmsg('❌ Zoho error: '+(r.message||JSON.stringify(r)),'#ff7070');
   }catch(e){zmsg('❌ '+e.message,'#ff7070');}
 }
