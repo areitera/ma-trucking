@@ -142,7 +142,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 <div id="tab-calculator" class="panel active">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
     <div>
-      <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--soil)">Delivery Quote</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--soil)">Delivery Quote <span id="zoho-ref-badge" style="font-size:1rem;color:var(--rust);font-weight:700"></span></div>
       <div style="font-size:.8rem;color:#888;margin-top:.1rem" id="quote-date"></div>
     </div>
     <button class="btn bs bsm" onclick="newQuote()">+ New Quote</button>
@@ -816,6 +816,9 @@ function newQuote(){
   G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true; G('bol-attach-btn').disabled=true;
   G('z-msg').textContent='';
   setQDate();
+  window._zohoRef = '';
+  const badge=G('zoho-ref-badge');
+  if(badge) badge.textContent='';
   calculate();
 }
 
@@ -916,29 +919,39 @@ async function zLookup(){
 }
 
 function autoFillFromZoho(r){
+  // ── Show Zoho ref number as the quote/BOL reference ──
+  const refNum = r.record_number || '';
+  const badge = G('zoho-ref-badge');
+  if(badge) badge.textContent = refNum ? '— '+refNum : '';
+  // Store ref for PDF use
+  window._zohoRef = refNum;
+
   // ── Calculator fields ──
-  if(r.customer_name) G('cust-name').value  = r.customer_name;
+  if(r.customer_name) G('cust-name').value    = r.customer_name;
   if(r.phone)         G('cust-contact').value = r.phone;
   else if(r.email)    G('cust-contact').value = r.email;
   if(r.address)       G('cust-address').value = r.address;
   if(r.total>0)       G('order-val').value    = r.total.toFixed(2);
-  // Auto-fill pieces from line item quantity if pallets not set
+  // Auto-fill pieces from line item qty if pallets/pieces not already set
   if(r.line_items_qty>0 && (parseInt(V('pallets'))||0)===0 && (parseInt(V('pieces'))||0)===0){
     G('pieces').value = Math.round(r.line_items_qty);
   }
 
   // ── BOL fields ──
-  if(r.customer_name) G('b-cname').value   = r.customer_name;
-  if(r.phone)         G('b-cphone').value  = r.phone;
-  if(r.address)       G('b-caddr').value   = r.address;
-  if(r.total>0)       G('b-val').value     = r.total.toFixed(2);
+  if(r.customer_name) G('b-cname').value  = r.customer_name;
+  if(r.phone)         G('b-cphone').value = r.phone;
+  else if(r.email)    G('b-cphone').value = r.email;
+  if(r.address)       G('b-caddr').value  = r.address;
+  if(r.total>0)       G('b-val').value    = r.total.toFixed(2);
   if(r.line_items_qty>0) G('b-pieces').value = Math.round(r.line_items_qty);
-  // Freight charges default to collect (customer pays)
+  // Use Zoho quote number as BOL reference number
+  if(refNum)          G('b-bolnum').value = refNum;
+  // Freight charges default to collect
   G('b-pay').value = 'collect';
   // Province — detect BC from address
   if(r.address && r.address.toUpperCase().includes('BC')){
-    G('cust-province').value   = 'BC';
-    G('b-cprov').value         = 'BC';
+    G('cust-province').value = 'BC';
+    G('b-cprov').value       = 'BC';
   }
 
   // Recalculate with new order value
@@ -952,7 +965,7 @@ async function zPush(){
   zmsg('⬆️ Pushing trucking cost to Zoho…');
   const rtLabel=c.rtOn?'×'+c.rt+' round trip':'×1 one-way';
   const note=[
-    'Delivery Quote: Q-'+pad(QC),
+    'Delivery Quote: '+(window._zohoRef||'—'),
     'Vehicle: '+c.v.name,
     'Route: Mayerthorpe, AB → '+(V('cust-address')||c.prov),
     'Distance: '+c.km+' km one-way ('+rtLabel+')',
@@ -1016,11 +1029,11 @@ function genQuotePDF(){
   doc.text('Feed & Ranch Supply  ·  Mayerthorpe, AB T0E 1N0',M,18);
   if(S.phone) doc.text(S.phone+(S.email?' · '+S.email:''),M,23);
 
-  const qn=new Date().toLocaleDateString('en-CA');
-  doc.setFillColor(184,75,43); doc.roundedRect(W-M-45,6,45,16,3,3,'F');
+  const qn=(window._zohoRef)||new Date().toLocaleDateString('en-CA');
+  doc.setFillColor(184,75,43); doc.roundedRect(W-M-48,6,48,16,3,3,'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
-  doc.setFontSize(7); doc.text('DELIVERY QUOTE',W-M-22.5,13,{align:'center'});
-  doc.setFontSize(9); doc.text(qn,W-M-22.5,20,{align:'center'});
+  doc.setFontSize(7); doc.text('DELIVERY QUOTE',W-M-24,13,{align:'center'});
+  doc.setFontSize(10); doc.text(qn,W-M-24,20,{align:'center'});
 
   y=36; doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(130,120,110);
   doc.text('Issued: '+new Date().toLocaleDateString('en-CA'),M,y);
