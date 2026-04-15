@@ -281,7 +281,7 @@ input:checked+.slider::before{transform:translateX(18px)}
       </div>
       <div class="zf field">
         <label>Zoho Estimate / Quote Number</label>
-        <input type="text" id="z-ref" placeholder="e.g. EST-000123" oninput="clearZoho()">
+        <input type="text" id="z-ref" placeholder="EST-000123 · SO-000123 · INV-000123" oninput="clearZoho()">
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
         <button class="btn bb bsm" onclick="zLookup()">🔍 Lookup</button>
@@ -372,9 +372,27 @@ input:checked+.slider::before{transform:translateX(18px)}
       </div>
     </div>
 
+    <!-- BOL Zoho Integration -->
+    <div class="zpanel" style="margin-top:1rem">
+      <h4>Zoho Books — Link to Record</h4>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem">
+        <div class="zdot ok"></div>
+        <span style="color:rgba(255,255,255,.65);font-size:.82rem" id="bol-zstatus">Search an estimate, sales order, or invoice</span>
+      </div>
+      <div class="zf field">
+        <label>Zoho Number</label>
+        <input type="text" id="bol-z-ref" placeholder="EST-000123 · SO-000123 · INV-000123" oninput="clearBolZoho()">
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+        <button class="btn bb bsm" onclick="bolZLookup()">🔍 Lookup</button>
+        <button class="btn bsm" style="background:rgba(255,255,255,.15);color:white" id="bol-z-attach-btn" onclick="bolZAttach()" disabled>📎 Attach BOL PDF</button>
+        <button class="btn bb bsm" id="bol-z-push-btn" onclick="bolZPush()" disabled>⬆️ Push Trucking Cost</button>
+      </div>
+      <div id="bol-z-msg" style="margin-top:.65rem;font-size:.8rem;color:rgba(255,255,255,.7)"></div>
+    </div>
+
     <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem;align-items:center">
       <button class="btn bp blg" onclick="genBOLPDF()">📄 Export BOL PDF</button>
-      <button class="btn bb" id="bol-attach-btn" onclick="zAttachBOL()" disabled>📎 Attach to Zoho Quote</button>
     </div>
     <div id="bol-attach-msg" style="margin-top:.65rem;font-size:.85rem;color:#666"></div>
   </div>
@@ -926,6 +944,15 @@ async function zLookup(){
       G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
       return;
     }
+    // Try invoices
+    r=await proxyRequest('zohoInvoiceLookup',{invoiceNumber:ref});
+    if(r.record_id){
+      _zId={type:r.record_type,id:r.record_id,num:r.record_number,cust:r.customer_name};
+      autoFillFromZoho(r);
+      zmsg('✅ Found: '+r.record_number+' — '+r.customer_name,'#7fcc7f');
+      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
+      return;
+    }
     zmsg('❌ Not found in Zoho. Check the number.','#ff7070');
   }catch(e){zmsg('❌ '+e.message,'#ff7070');}
 }
@@ -1296,6 +1323,88 @@ function genBOLPDF(){
   const a=document.createElement('a');
   a.href=url; a.download=(G('b-bolnum')?.value||'BOL')+'_BillOfLading.pdf';
   a.click(); URL.revokeObjectURL(url);
+}
+
+// ══════════════════ BOL ZOHO ══════════════════
+function bolZmsg(txt,col){
+  const m=G('bol-z-msg'), s=G('bol-zstatus');
+  if(m){m.style.color=col||'rgba(255,255,255,.7)';m.textContent=txt;}
+  if(s) s.textContent=txt;
+}
+function clearBolZoho(){
+  const a=G('bol-z-attach-btn'),p=G('bol-z-push-btn');
+  if(a) a.disabled=true;
+  if(p) p.disabled=true;
+  G('bol-z-msg').textContent='';
+}
+
+async function bolZLookup(){
+  const ref=V('bol-z-ref').trim();
+  if(!ref){bolZmsg('Enter a number first.','#ffaa55');return;}
+  if(!PROXY_URL){bolZmsg('Proxy URL not configured.','#ff7070');return;}
+  bolZmsg('🔍 Looking up '+ref+'…');
+  function onFound(r){
+    _zId={type:r.record_type,id:r.record_id,num:r.record_number,cust:r.customer_name};
+    autoFillFromZoho(r);
+    bolZmsg('✅ Found: '+r.record_number+' — '+r.customer_name,'#7fcc7f');
+    G('bol-z-attach-btn').disabled=false; G('bol-z-push-btn').disabled=false;
+    // Also enable calculator buttons if visible
+    if(G('z-push-btn')) G('z-push-btn').disabled=false;
+    if(G('z-bol-btn')) G('z-bol-btn').disabled=false;
+    if(G('bol-attach-btn')) G('bol-attach-btn').disabled=false;
+  }
+  try{
+    let r=await proxyRequest('zohoEstimateLookup',{estimateNumber:ref});
+    if(r.record_id){onFound(r);return;}
+    r=await proxyRequest('zohoSalesOrderLookup',{salesOrderNumber:ref});
+    if(r.record_id){onFound(r);return;}
+    r=await proxyRequest('zohoInvoiceLookup',{invoiceNumber:ref});
+    if(r.record_id){onFound(r);return;}
+    bolZmsg('❌ Not found. Check the number.','#ff7070');
+  }catch(e){bolZmsg('❌ '+e.message,'#ff7070');}
+}
+
+async function bolZAttach(){
+  if(!_zId){bolZmsg('Lookup a record first.','#ffaa55');return;}
+  bolZmsg('📄 Generating BOL PDF…');
+  try{
+    const bytes=buildBOLBytes();
+    bolZmsg('⬆️ Uploading BOL to Zoho…');
+    const b64=arrayBufferToBase64(bytes);
+    const r=await proxyRequest('zohoAttachPDF',{
+      recordType:_zId.type, recordId:_zId.id,
+      filename:'BOL-'+(window._zohoRef||G('b-bolnum')?.value||new Date().toISOString().split('T')[0])+'.pdf',
+      fileBase64:b64
+    });
+    if(r.attached||r.code===0) bolZmsg('✅ BOL attached successfully!','#7fcc7f');
+    else bolZmsg('❌ '+(r.message||JSON.stringify(r)),'#ff7070');
+  }catch(e){bolZmsg('❌ '+e.message,'#ff7070');}
+}
+
+async function bolZPush(){
+  if(!_zId){bolZmsg('Lookup a record first.','#ffaa55');return;}
+  if(!window._C){bolZmsg('Go to Calculator tab and calculate a delivery first.','#ffaa55');return;}
+  const c=window._C;
+  bolZmsg('⬆️ Adding delivery line item…');
+  const rtLabel=c.rtOn?'×'+c.rt+' round trip':'×1 one-way';
+  const note=[
+    'Vehicle: '+c.v.name,
+    'Route: Mayerthorpe, AB → '+(V('cust-address')||c.prov),
+    'Distance: '+c.km+' km one-way ('+rtLabel+')',
+    'Pallets: '+c.pals+(c.pcs>0?' · '+c.pcs+' loose pieces':''),
+    c.wt>0?'Est. Weight: '+c.wt.toLocaleString()+' kg':'',
+    'Fuel surcharge: $'+c.fuel.toFixed(2),
+    c.free?'** DELIVERY WAIVED **':''
+  ].filter(Boolean).join(' | ');
+  try{
+    const r=await proxyRequest('zohoUpdateEstimateNotes',{
+      recordType:_zId.type, recordId:_zId.id,
+      quoteRef:window._zohoRef||'',
+      chargeBeforeGST:c.charge, notes:note
+    });
+    if(r.updated||r.code===0) bolZmsg('✅ Delivery line item added!','#7fcc7f');
+    else bolZmsg('❌ '+(r.message||JSON.stringify(r)),'#ff7070');
+  }catch(e){bolZmsg('❌ '+e.message,'#ff7070');}
 }
 
 // ══════════════════ RESPONSIVE ══════════════════
