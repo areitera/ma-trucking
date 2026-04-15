@@ -22,111 +22,123 @@ window.onunhandledrejection = function(e){
 };
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600;700&display=swap');
-:root{--rust:#B84B2B;--rust-dk:#8C3420;--hay:#D4A843;--hay-lt:#F2E0B0;--soil:#2C1A0E;--soil-lt:#4A3020;--stone:#F5F0E8;--white:#FDFAF5;--mist:#EDE8DF;--green:#3A6B3A;--green-lt:#EBF2EB;--red-lt:#FCEEE9;--blue:#1A4A8A;--blue-lt:#EAF0FF;--shadow:0 2px 12px rgba(44,26,14,.10);--r:10px;--rl:16px}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root{
+  --primary:#2563EB;--primary-dk:#1D4ED8;--primary-lt:#EFF6FF;--primary-ring:rgba(37,99,235,.15);
+  --bg:#F8FAFC;--surface:#FFFFFF;--border:#E2E8F0;--border-dk:#CBD5E1;--muted:#F1F5F9;
+  --text:#0F172A;--text-2:#334155;--text-3:#64748B;--text-4:#94A3B8;
+  --success:#059669;--success-lt:#ECFDF5;--warning:#D97706;--warning-lt:#FFFBEB;
+  --error:#DC2626;--error-lt:#FEF2F2;--info:#2563EB;--info-lt:#EFF6FF;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+  --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:0 4px 8px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.04);
+  --r:8px;--rl:12px
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Source Sans 3',sans-serif;background:var(--stone);color:var(--soil);min-height:100vh}
-header{background:var(--soil);color:var(--white);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:70px;border-bottom:4px solid var(--rust);position:sticky;top:0;z-index:100}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+header{background:#0F172A;color:#fff;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;height:60px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-md)}
 .brand{display:flex;align-items:center;gap:.75rem}
-.brand-icon{font-size:1.8rem}
-.brand-name{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;line-height:1.1}
-.brand-sub{font-size:.7rem;font-weight:300;color:var(--hay);letter-spacing:.08em;text-transform:uppercase}
-.hbadge{background:var(--rust);color:var(--white);font-size:.7rem;font-weight:700;padding:.25rem .75rem;border-radius:20px;letter-spacing:.05em;text-transform:uppercase}
-.tabs{background:var(--soil-lt);display:flex;padding:0 2rem;overflow-x:auto}
-.tab{color:rgba(255,255,255,.55);font-size:.82rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.75rem 1.25rem;cursor:pointer;border-bottom:3px solid transparent;transition:all .18s;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap}
-.tab:hover{color:rgba(255,255,255,.85)}
-.tab.active{color:var(--hay);border-bottom-color:var(--hay)}
-.main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.brand-icon{font-size:1.4rem}
+.brand-name{font-size:1rem;font-weight:700;letter-spacing:-.01em;color:#fff}
+.brand-sub{font-size:.7rem;font-weight:400;color:#94A3B8;letter-spacing:.01em}
+.hbadge{background:rgba(37,99,235,.25);color:#93C5FD;border:1px solid rgba(59,130,246,.3);font-size:.7rem;font-weight:600;padding:.3rem .75rem;border-radius:20px;letter-spacing:.04em;text-transform:uppercase}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 2rem;overflow-x:auto;position:sticky;top:60px;z-index:99;box-shadow:var(--shadow-sm)}
+.tab{color:var(--text-3);font-size:.8rem;font-weight:500;padding:.875rem 1rem;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;transition:color .15s,border-color .15s;white-space:nowrap;display:flex;align-items:center;gap:.4rem}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.main{max-width:1120px;margin:0 auto;padding:1.75rem 1.5rem 4rem}
 .panel{display:none}.panel.active{display:block}
-.card{background:var(--white);border-radius:var(--rl);box-shadow:var(--shadow);padding:1.75rem 2rem;margin-bottom:1.25rem}
-.ct{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--rust);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.card{background:var(--surface);border-radius:var(--rl);border:1px solid var(--border);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem}
+.ct{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem}
+.ct::before{content:'';display:inline-block;width:3px;height:13px;background:var(--primary);border-radius:2px;flex-shrink:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.875rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.875rem}
 @media(max-width:640px){.g2,.g3{grid-template-columns:1fr}}
-label{display:block;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soil-lt);margin-bottom:.4rem}
-input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--stone);border:1.5px solid var(--mist);border-radius:var(--r);padding:.6rem .85rem;font-family:inherit;font-size:.95rem;color:var(--soil);transition:border-color .15s,box-shadow .15s;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--rust);box-shadow:0 0 0 3px rgba(184,75,43,.12)}
+label{display:block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);margin-bottom:.35rem}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:.55rem .75rem;font-family:inherit;font-size:.875rem;color:var(--text);transition:border-color .15s,box-shadow .15s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-ring)}
 textarea{resize:vertical;min-height:70px}
-.field{margin-bottom:.85rem}
-.tr{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--mist)}
+.field{margin-bottom:.75rem}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border)}
 .tr:last-child{border-bottom:none}
-.tl{font-size:.9rem;font-weight:600}
-.td{font-size:.78rem;color:#888}
-.toggle{position:relative;width:42px;height:24px;flex-shrink:0}
+.tl{font-size:.875rem;font-weight:500;color:var(--text)}
+.td{font-size:.75rem;color:var(--text-3);margin-top:.1rem}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
-.slider{position:absolute;inset:0;background:var(--mist);border-radius:12px;cursor:pointer;transition:background .2s}
-.slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
-input:checked+.slider{background:var(--rust)}
+.slider{position:absolute;inset:0;background:var(--border-dk);border-radius:11px;cursor:pointer;transition:background .2s}
+.slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input:checked+.slider{background:var(--primary)}
 input:checked+.slider::before{transform:translateX(18px)}
-.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.85rem}
-.vc{border:2px solid var(--mist);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .15s;text-align:center;background:var(--stone)}
-.vc:hover,.vc.sel{border-color:var(--rust);background:var(--red-lt)}
-.vc.sel{box-shadow:0 0 0 3px rgba(184,75,43,.15)}
-.load-wrap{background:var(--stone);border-radius:var(--r);padding:1rem 1.25rem;margin-top:1rem}
-.lbar-bg{background:var(--mist);border-radius:6px;height:14px;overflow:hidden;margin:.5rem 0}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem}
+.vc{border:1.5px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .15s;text-align:center;background:var(--surface)}
+.vc:hover{border-color:var(--primary);background:var(--primary-lt)}
+.vc.sel{border-color:var(--primary);background:var(--primary-lt);box-shadow:0 0 0 3px var(--primary-ring)}
+.load-wrap{background:var(--muted);border-radius:var(--r);padding:1rem;margin-top:.875rem;border:1px solid var(--border)}
+.lbar-bg{background:var(--border);border-radius:6px;height:8px;overflow:hidden;margin:.5rem 0}
 .lbar{height:100%;border-radius:6px;transition:width .4s,background .3s}
-.pviz{display:flex;gap:6px;flex-wrap:wrap;margin-top:.75rem}
-.pbox{width:38px;height:38px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;transition:all .2s}
-.pbox.on{background:var(--rust);color:white}
-.pbox.off{background:var(--mist);color:#bbb;border:2px dashed #ccc}
-.sumbox{background:var(--soil);color:var(--white);border-radius:var(--rl);padding:1.75rem 2rem;margin-bottom:1.25rem}
-.sumbox h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--hay);margin-bottom:1rem}
-.sr{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:.9rem}
+.pviz{display:flex;gap:5px;flex-wrap:wrap;margin-top:.75rem}
+.pbox{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;transition:all .2s}
+.pbox.on{background:var(--primary);color:white}
+.pbox.off{background:var(--muted);color:var(--text-4);border:1.5px dashed var(--border-dk)}
+.sumbox{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);color:white;border-radius:var(--rl);padding:1.5rem;margin-bottom:1rem;border:1px solid rgba(255,255,255,.06)}
+.sumbox h3{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#93C5FD;margin-bottom:1rem}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.85rem}
 .sr:last-child{border-bottom:none}
-.sr.tot{padding-top:.85rem;font-size:1.25rem;font-weight:700;border-top:1px solid rgba(255,255,255,.2);border-bottom:none;color:var(--hay)}
-.sr.dis{color:#7fcc7f}
-.sl{color:rgba(255,255,255,.65)}
-.sv{font-weight:700}
-.alert{border-radius:var(--r);padding:.85rem 1rem;font-size:.875rem;font-weight:600;margin-bottom:.75rem;display:flex;gap:.5rem;align-items:flex-start}
-.aw{background:#FFF8E6;border-left:4px solid var(--hay);color:#7a5700}
-.ao{background:var(--green-lt);border-left:4px solid var(--green);color:var(--green)}
-.ae{background:var(--red-lt);border-left:4px solid var(--rust);color:var(--rust-dk)}
-.ai{background:var(--blue-lt);border-left:4px solid var(--blue);color:var(--blue)}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;border:none;border-radius:var(--r);font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none;letter-spacing:.02em}
-.bp{background:var(--rust);color:white}.bp:hover{background:var(--rust-dk);transform:translateY(-1px)}
-.bs{background:var(--mist);color:var(--soil)}.bs:hover{background:#d5cfc6}
-.bso{background:var(--soil);color:white}.bso:hover{background:var(--soil-lt)}
-.bb{background:var(--blue);color:white}.bb:hover{background:#0d3570}
-.bsm{padding:.45rem .9rem;font-size:.8rem}
-.blg{padding:.9rem 2rem;font-size:1rem}
+.sr.tot{padding-top:.875rem;font-size:1.2rem;font-weight:700;border-top:1px solid rgba(255,255,255,.15);border-bottom:none;color:#93C5FD}
+.sr.dis{color:#6EE7B7}
+.sl{color:rgba(255,255,255,.5)}
+.sv{font-weight:600}
+.alert{border-radius:var(--r);padding:.75rem 1rem;font-size:.825rem;font-weight:500;margin-bottom:.75rem;display:flex;gap:.5rem;align-items:flex-start;border:1px solid transparent}
+.aw{background:var(--warning-lt);border-color:#FDE68A;color:#92400E}
+.ao{background:var(--success-lt);border-color:#A7F3D0;color:#065F46}
+.ae{background:var(--error-lt);border-color:#FECACA;color:#991B1B}
+.ai{background:var(--info-lt);border-color:#BFDBFE;color:#1E40AF}
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.6rem 1.25rem;border:none;border-radius:var(--r);font-family:inherit;font-size:.825rem;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;letter-spacing:.01em;white-space:nowrap}
+.bp{background:var(--primary);color:white;box-shadow:0 1px 2px rgba(37,99,235,.3)}.bp:hover{background:var(--primary-dk);transform:translateY(-1px);box-shadow:0 4px 8px rgba(37,99,235,.3)}
+.bs{background:var(--muted);color:var(--text-2);border:1px solid var(--border)}.bs:hover{background:var(--border)}
+.bso{background:var(--text);color:white}.bso:hover{background:var(--text-2)}
+.bb{background:#4F46E5;color:white}.bb:hover{background:#4338CA}
+.bsm{padding:.4rem .875rem;font-size:.775rem}
+.blg{padding:.8rem 1.75rem;font-size:.9rem}
 .bbl{width:100%;justify-content:center}
-.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-.zpanel{background:linear-gradient(135deg,#1A3A6A 0%,#0d2548 100%);border-radius:var(--rl);padding:1.5rem;margin-bottom:1.25rem;color:white}
-.zpanel h4{font-family:'Playfair Display',serif;font-size:1rem;color:#7EB3FF;margin-bottom:.85rem}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.zpanel{background:linear-gradient(135deg,#1E1B4B 0%,#312E81 100%);border:1px solid rgba(99,102,241,.3);border-radius:var(--rl);padding:1.25rem;margin-bottom:1rem;color:white}
+.zpanel h4{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#A5B4FC;margin-bottom:.875rem}
 .zdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s}
-.zdot.ok{background:#7fcc7f;box-shadow:0 0 6px rgba(127,204,127,.5)}
-.zdot.err{background:#ff7070}
-.zdot.spin{background:var(--hay);animation:pu 1s infinite}
+.zdot.ok{background:#34D399;box-shadow:0 0 6px rgba(52,211,153,.5)}
+.zdot.err{background:#F87171}
+.zdot.spin{background:#FCD34D;animation:pu 1s infinite}
 @keyframes pu{0%,100%{opacity:1}50%{opacity:.4}}
-.zf label{color:rgba(255,255,255,.6);font-size:.72rem}
-.zf input,.zf select{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:white}
-.zf input::placeholder{color:rgba(255,255,255,.35)}
-.zf input:focus,.zf select:focus{border-color:#7EB3FF;box-shadow:0 0 0 3px rgba(126,179,255,.2)}
-.sc{background:var(--stone);border:1.5px solid var(--mist);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:.75rem;position:relative}
-.rm{position:absolute;top:.75rem;right:.75rem;background:none;border:none;color:#bbb;cursor:pointer;font-size:1rem;transition:color .15s}
-.rm:hover{color:var(--rust)}
-.rbox{background:linear-gradient(135deg,var(--soil) 0%,var(--soil-lt) 100%);border-radius:var(--rl);padding:1.5rem;color:var(--white);margin-bottom:1.25rem}
-.rbox h4{font-family:'Playfair Display',serif;font-size:1rem;color:var(--hay);margin-bottom:.75rem}
-.rr{display:flex;justify-content:space-between;font-size:.85rem;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.08)}
-.rr .rv{font-weight:700;color:var(--hay)}
-.bols{border:1.5px solid var(--mist);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:.75rem}
-.bols h5{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);margin-bottom:.75rem}
+.zf label{color:rgba(255,255,255,.55);font-size:.7rem}
+.zf input,.zf select{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white}
+.zf input::placeholder{color:rgba(255,255,255,.3)}
+.zf input:focus,.zf select:focus{border-color:#818CF8;box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+.sc{background:var(--muted);border:1.5px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:.75rem;position:relative}
+.rm{position:absolute;top:.75rem;right:.75rem;background:none;border:none;color:var(--text-4);cursor:pointer;font-size:.875rem;transition:color .15s;padding:.25rem}
+.rm:hover{color:var(--error)}
+.rbox{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:var(--rl);padding:1.25rem;color:white;margin-bottom:1rem;border:1px solid rgba(255,255,255,.06)}
+.rbox h4{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#93C5FD;margin-bottom:.875rem}
+.rr{display:flex;justify-content:space-between;font-size:.8rem;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.rr:last-child{border-bottom:none}
+.rr .rv{font-weight:700;color:#93C5FD}
+.bols{border:1.5px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:.75rem;background:var(--surface)}
+.bols h5{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin-bottom:.875rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
 .bolr{display:flex;gap:1rem;margin-bottom:.5rem}
 .bolf{flex:1}
-.qn{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--rust)}
+.qn{font-size:2rem;font-weight:800;color:var(--primary);letter-spacing:-.02em}
 .sg{margin-bottom:1.5rem}
-.sg h4{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#999;margin-bottom:.85rem;padding-bottom:.4rem;border-bottom:1px solid var(--mist)}
-.sl-lbl{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:.85rem}
-.pb-ab{background:#E8F4FF;color:#0055A4;display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.72rem;font-weight:700}
-.pb-bc{background:#FFF0E8;color:#B84B2B;display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.72rem;font-weight:700}
-@media(max-width:768px){.main{padding:1rem 1rem 5rem}.card{padding:1.25rem}header{padding:0 1rem}.tabs{padding:0 .5rem}}
+.sg h4{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:.875rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+.sl-lbl{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:.875rem}
+.pb-ab{background:#DBEAFE;color:#1E40AF;display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.72rem;font-weight:700}
+.pb-bc{background:#F0FDF4;color:#166534;display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.72rem;font-weight:700}
+@media(max-width:768px){.main{padding:1rem 1rem 5rem}.card{padding:1.25rem}header{padding:0 1rem}.tabs{padding:0 .5rem;top:60px}}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
-    <div><div class="brand-name">Mane Attraction</div>
-    <div class="brand-sub">Feed &amp; Ranch Supply · Mayerthorpe, AB</div></div>
+    <div class="brand-name">Mane Attraction</div>
+    <div class="brand-sub">Feed &amp; Ranch Supply · Mayerthorpe, AB</div>
   </div>
   <span class="hbadge">Delivery Calculator</span>
 </header>
@@ -153,7 +165,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 
     <!-- CUSTOMER -->
     <div class="card">
-      <div class="ct">👤 Customer &amp; Delivery</div>
+      <div class="ct">Customer &amp; Delivery</div>
       <div class="g2">
         <div class="field"><label>Customer Name</label><input type="text" id="cust-name" placeholder="Full name or business"></div>
         <div class="field"><label>Phone / Email</label><input type="text" id="cust-contact" placeholder="Phone or email"></div>
@@ -180,7 +192,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 
     <!-- VEHICLE -->
     <div class="card">
-      <div class="ct">🚚 Vehicle / Carrier</div>
+      <div class="ct">Vehicle / Carrier</div>
       <div class="vgrid" id="vgrid"></div>
       <div id="trailer-row" style="display:none;margin-top:1rem" class="field">
         <label>Rented trailer deck length (ft) — updates pallet capacity</label>
@@ -203,7 +215,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 
     <!-- ORDER -->
     <div class="card">
-      <div class="ct">📦 Order / Load Details</div>
+      <div class="ct">Order / Load Details</div>
       <div class="g2">
         <div class="field"><label>Pallets</label><input type="number" id="pallets" min="0" max="40" value="0" oninput="calculate()"></div>
         <div class="field"><label>Pieces / Bags (not on pallets)</label><input type="number" id="pieces" min="0" value="0" oninput="calculate()" placeholder="Loose bags, tubs, etc."></div>
@@ -217,7 +229,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 
     <!-- OPTIONS -->
     <div class="card">
-      <div class="ct">🎛️ Delivery Options</div>
+      <div class="ct">Delivery Options</div>
       <div class="tr">
         <div><div class="tl">Free Delivery Override</div><div class="td">Manually waive delivery cost for this customer</div></div>
         <label class="toggle"><input type="checkbox" id="tog-free" onchange="calculate()"><span class="slider"></span></label>
@@ -254,7 +266,7 @@ input:checked+.slider::before{transform:translateX(18px)}
   <!-- RIGHT -->
   <div>
     <div class="sumbox">
-      <h3>💵 Delivery Quote</h3>
+      <h3>Delivery Quote</h3>
       <div id="sum-rows"></div>
     </div>
 
@@ -262,7 +274,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 
     <!-- ZOHO PANEL -->
     <div class="zpanel">
-      <h4>🔗 Zoho Books Integration</h4>
+      <h4>Zoho Books Integration</h4>
       <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem">
         <div class="zdot" id="zdot"></div>
         <span id="zstatus" style="color:rgba(255,255,255,.65);font-size:.82rem">Configure token in Settings</span>
@@ -280,7 +292,7 @@ input:checked+.slider::before{transform:translateX(18px)}
     </div>
 
     <div class="card" style="padding:1.25rem">
-      <div class="ct" style="font-size:.95rem;margin-bottom:.85rem">Rate Breakdown</div>
+      <div class="ct" style="margin-bottom:.85rem">Rate Breakdown</div>
       <div id="rate-panel"></div>
     </div>
 
@@ -296,7 +308,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 <!-- ══ TAB 2: BOL ══ -->
 <div id="tab-bol" class="panel">
   <div class="card">
-    <div class="ct">📋 Bill of Lading — Canada Compliant</div>
+    <div class="ct">Bill of Lading — Canada Compliant</div>
     <p style="font-size:.85rem;color:#666;margin-bottom:1rem">Alberta <em>Bill of Lading &amp; Conditions of Carriage Regulation (AR 313/2002)</em> and federal <em>Motor Vehicle Transport Act</em>.</p>
     <button class="btn bs bsm" onclick="populateBOL()" style="margin-bottom:1.25rem">📥 Pull from Current Quote</button>
 
@@ -371,7 +383,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 <!-- ══ TAB 3: VEHICLES ══ -->
 <div id="tab-vehicles" class="panel">
   <div class="card">
-    <div class="ct">🚚 Vehicle &amp; Carrier Management</div>
+    <div class="ct">Vehicle &amp; Carrier Management</div>
     <p style="font-size:.85rem;color:#666;margin-bottom:1.25rem">Rate multiplier is applied on top of your base $/km setting. Toggle active/inactive to show or hide in the calculator.</p>
     <div id="vlist"></div>
     <div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap">
@@ -380,7 +392,7 @@ input:checked+.slider::before{transform:translateX(18px)}
     </div>
   </div>
   <div class="card">
-    <div class="ct">📏 Load Reference</div>
+    <div class="ct">Load Reference</div>
     <div class="rbox">
       <h4>Pallet &amp; Capacity Reference</h4>
       <div class="rr"><span>Standard pallet (GMA)</span><span class="rv">48″×40″ (122×102 cm)</span></div>
@@ -398,10 +410,10 @@ input:checked+.slider::before{transform:translateX(18px)}
 <!-- ══ TAB 4: SETTINGS ══ -->
 <div id="tab-settings" class="panel">
   <div class="card">
-    <div class="ct">⚙️ Rate &amp; Company Settings</div>
+    <div class="ct">Rate &amp; Company Settings</div>
 
     <div class="rbox" style="margin-bottom:1.25rem">
-      <h4>📊 Rate Research — Mayerthorpe, AB (2025/26)</h4>
+      <h4>Rate Research — Mayerthorpe, AB (2025/26)</h4>
       <div class="rr"><span>Alberta diesel avg (late 2025)</span><span class="rv">~$1.63/L</span></div>
       <div class="rr"><span>Ram 5500 Cummins 6.7L — truck only</span><span class="rv">~22 L/100km</span></div>
       <div class="rr"><span>Ram 5500 + full gooseneck load</span><span class="rv">~28 L/100km</span></div>
@@ -1021,78 +1033,113 @@ function genQuotePDF(){
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
   const c=window._C, W=215.9, M=18; let y=0;
 
-  doc.setFillColor(44,26,14); doc.rect(0,0,W,28,'F');
-  doc.setTextColor(212,168,67); doc.setFontSize(18); doc.setFont('helvetica','bold');
-  doc.text('MANE ATTRACTION',M,12);
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(200,190,170);
-  doc.text('Feed & Ranch Supply  ·  Mayerthorpe, AB T0E 1N0',M,18);
-  if(S.phone) doc.text(S.phone+(S.email?' · '+S.email:''),M,23);
+  // ── Header band ──
+  doc.setFillColor(15,23,42); doc.rect(0,0,W,34,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(20); doc.setFont('helvetica','bold');
+  doc.text('MANE ATTRACTION',M,13);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184);
+  doc.text('Feed & Ranch Supply  ·  Mayerthorpe, Alberta T0E 1N0',M,20);
+  const contact=[S.phone,S.email].filter(Boolean).join('  ·  ');
+  if(contact) doc.text(contact,M,26);
 
+  // Quote badge
   const qn=(window._zohoRef)||new Date().toLocaleDateString('en-CA');
-  doc.setFillColor(184,75,43); doc.roundedRect(W-M-48,6,48,16,3,3,'F');
+  doc.setFillColor(37,99,235); doc.roundedRect(W-M-52,7,52,21,3,3,'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
-  doc.setFontSize(7); doc.text('DELIVERY QUOTE',W-M-24,13,{align:'center'});
-  doc.setFontSize(10); doc.text(qn,W-M-24,20,{align:'center'});
+  doc.setFontSize(6.5); doc.text('DELIVERY QUOTE',W-M-26,15,{align:'center'});
+  doc.setFontSize(11); doc.text(qn,W-M-26,23,{align:'center'});
 
-  y=36; doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(130,120,110);
+  y=41;
+  // Meta row
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
   doc.text('Issued: '+new Date().toLocaleDateString('en-CA'),M,y);
-  doc.text('Delivery: '+(V('deliv-date')||'—'),M+55,y);
-  doc.text('Province: '+c.prov,M+120,y); y+=7;
-  doc.setDrawColor(212,168,67); doc.setLineWidth(0.5); doc.line(M,y,W-M,y); y+=7;
+  doc.text('Delivery: '+(V('deliv-date')||'—'),M+62,y);
+  doc.text('Province: '+c.prov,M+134,y);
+  y+=5;
+  // Blue accent line
+  doc.setDrawColor(37,99,235); doc.setLineWidth(0.6); doc.line(M,y,W-M,y);
+  y+=8;
 
+  // ── Two-column info cards ──
+  const hw=(W-M*2-7)/2;
   const cn=V('cust-name')||'—', ca=V('cust-address')||'—', cc=V('cust-contact')||'—';
-  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
-  doc.text('CUSTOMER',M,y); doc.text('VEHICLE / CARRIER',M+100,y); y+=5;
-  doc.setFont('helvetica','normal'); doc.setTextColor(44,26,14); doc.setFontSize(9);
-  doc.text(cn,M,y); doc.text(c.v.name,M+100,y); y+=5;
-  doc.setFontSize(8); doc.setTextColor(80,70,60);
-  doc.text(ca,M,y); doc.text('Max '+(c.v.id==='goose'?'8':c.v.mp)+' pallets',M+100,y); y+=4.5;
-  doc.text(cc,M,y); y+=8;
-  doc.setDrawColor(220,215,205); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=7;
 
+  // Customer card
+  doc.setFillColor(248,250,252); doc.roundedRect(M,y,hw,30,2,2,'F');
+  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.roundedRect(M,y,hw,30,2,2,'S');
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+  doc.text('CUSTOMER',M+4,y+5.5);
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42);
+  doc.text(cn,M+4,y+12);
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(71,85,105);
+  doc.text(ca,M+4,y+19);
+  doc.text(cc,M+4,y+25.5);
+
+  // Vehicle card
+  const vx=M+hw+7;
+  doc.setFillColor(248,250,252); doc.roundedRect(vx,y,hw,30,2,2,'F');
+  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.roundedRect(vx,y,hw,30,2,2,'S');
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+  doc.text('VEHICLE / CARRIER',vx+4,y+5.5);
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42);
+  doc.text(c.v.name,vx+4,y+12);
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(71,85,105);
+  doc.text('Max '+(c.v.id==='goose'?'8':c.v.mp)+' pallets  ·  ×'+c.v.rm+' rate multiplier',vx+4,y+19);
+  if(c.v.u) doc.text('Unit: '+c.v.u,vx+4,y+25.5);
+
+  y+=38;
+
+  // ── Order details table ──
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+  doc.text('ORDER DETAILS',M,y); y+=4;
   const pcsVal=parseInt(V('pieces'))||0;
+  const detailRows=[
+    ['Route','Mayerthorpe, AB  →  '+(ca||c.prov)],
+    ['Distance (one-way)',c.km.toLocaleString()+' km'],
+    ['Round trip',c.rtOn?'Yes (×'+c.rt+' — return included)':'No (one-way only)'],
+    ['Pallets',V('pallets')||'0'],
+    ['Loose pieces / bags',pcsVal>0?String(pcsVal):'—'],
+    ['Est. total weight',V('weight')?V('weight')+' kg':'—'],
+    ['Order value',c.oval>0?'$'+c.oval.toFixed(2):'—'],
+  ];
+  if(V('order-notes')) detailRows.push(['Notes',V('order-notes')]);
   doc.autoTable({startY:y,head:[],margin:{left:M,right:M},
-    body:[
-      ['Route','Mayerthorpe, AB → '+(ca||c.prov)],
-      ['Distance (one-way)',c.km.toLocaleString()+' km'],
-      ['Round trip',c.rtOn?'Yes (×'+c.rt+')':'No (one-way only)'],
-      ['Pallets',V('pallets')||'0'],
-      ['Loose Pieces / Bags',pcsVal>0?String(pcsVal):'—'],
-      ['Est. Total Weight',V('weight')?V('weight')+' kg':'—'],
-      ['Order Value',c.oval>0?'$'+c.oval.toFixed(2):'—'],
-      ['Notes',V('order-notes')||'—'],
-    ],
-    styles:{fontSize:8.5,cellPadding:2.5,textColor:[44,26,14]},
-    columnStyles:{0:{fontStyle:'bold',cellWidth:65,textColor:[120,90,70]},1:{cellWidth:100}},
-    tableLineColor:[220,215,205],tableLineWidth:0.3});
-  y=doc.lastAutoTable.finalY+7;
+    body:detailRows,
+    styles:{fontSize:8,cellPadding:2.5,textColor:[15,23,42]},
+    columnStyles:{0:{fontStyle:'bold',cellWidth:58,textColor:[100,116,139],fillColor:[248,250,252]},1:{cellWidth:117}},
+    tableLineColor:[226,232,240],tableLineWidth:0.25});
+  y=doc.lastAutoTable.finalY+8;
 
+  // ── Charges table ──
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+  doc.text('DELIVERY CHARGES',M,y); y+=4;
   const rows=[
-    ['Base km charge ('+c.km+' km × '+(c.rtOn?c.rt+'×RT':'1×OW')+' × $'+c.rpk.toFixed(2)+'/km)','$'+c.base.toFixed(2)],
+    ['Base km charge ('+c.km+' km × '+(c.rtOn?c.rt+'× RT':'1× OW')+' × $'+c.rpk.toFixed(2)+'/km)','$'+c.base.toFixed(2)],
     ['Fuel surcharge','$'+c.fuel.toFixed(2)],
   ];
   if(c.bc>0) rows.push(['BC carbon premium (~15%)','$'+c.bc.toFixed(2)]);
-  if(c.split) rows.push(['Your share of split route ('+Math.round(c.frac*100)+'%)','']);
+  if(c.split&&c.frac<1) rows.push(['Your share of split route ('+Math.round(c.frac*100)+'%)','—']);
   if(c.da>0) rows.push(['Discount'+(V('dsc-reason')?' — '+V('dsc-reason'):''),'−$'+c.da.toFixed(2)]);
-  if(c.free) rows.push(['DELIVERY WAIVED','$0.00']);
+  if(c.free) rows.push(['Delivery waived','$0.00']);
   rows.push(['GST (5%)','$'+c.gst.toFixed(2)]);
-
   doc.autoTable({startY:y,
     head:[['Description','Amount']],
     body:rows,
     foot:[['TOTAL (CAD, incl. GST)','$'+c.total.toFixed(2)]],
     margin:{left:M,right:M},
-    headStyles:{fillColor:[44,26,14],textColor:[212,168,67],fontSize:8,fontStyle:'bold'},
-    footStyles:{fillColor:[184,75,43],textColor:[255,255,255],fontSize:10,fontStyle:'bold'},
-    styles:{fontSize:8.5,cellPadding:2.8,textColor:[44,26,14]},
-    columnStyles:{0:{cellWidth:140},1:{cellWidth:37,halign:'right'}},
-    tableLineColor:[220,215,205],tableLineWidth:0.3});
+    headStyles:{fillColor:[15,23,42],textColor:[147,197,253],fontSize:7.5,fontStyle:'bold'},
+    footStyles:{fillColor:[37,99,235],textColor:[255,255,255],fontSize:11,fontStyle:'bold'},
+    styles:{fontSize:8.5,cellPadding:2.8,textColor:[15,23,42]},
+    columnStyles:{0:{cellWidth:145},1:{cellWidth:32,halign:'right'}},
+    tableLineColor:[226,232,240],tableLineWidth:0.25,
+    alternateRowStyles:{fillColor:[248,250,252]}});
 
-  doc.setDrawColor(184,75,43); doc.setLineWidth(0.5); doc.line(M,262,W-M,262);
-  doc.setFontSize(7); doc.setTextColor(130,120,110);
-  doc.text('Valid 14 days from issue. Rates subject to change with fuel costs.',M,267);
+  // ── Footer ──
+  doc.setDrawColor(37,99,235); doc.setLineWidth(0.4); doc.line(M,261,W-M,261);
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
+  doc.text('Quote valid 14 days from issue. Rates subject to change with fuel costs.',M,266);
   doc.text(S.biz+(S.gst?' · GST# '+S.gst:''),M,271);
-  if(S.email) doc.text(S.email,W-M,267,{align:'right'});
+  if(S.email) doc.text(S.email,W-M,266,{align:'right'});
 
   doc.save(qn+'_DeliveryQuote.pdf');
 }
@@ -1113,92 +1160,131 @@ function buildBOLBytes(){
     fchg=g('b-fchg'), fsc=g('b-fsc'),
     haz=G('b-hazmat')?.checked, ins=g('b-instr');
 
-  doc.setFillColor(44,26,14); doc.rect(0,0,W,28,'F');
-  doc.setTextColor(212,168,67); doc.setFontSize(17); doc.setFont('helvetica','bold');
-  doc.text('STRAIGHT BILL OF LADING',M,11);
-  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(200,190,170);
-  doc.text('Motor Carrier — Not Negotiable',M,17);
-  doc.text('Alberta Bill of Lading & Conditions of Carriage Regulation (AR 313/2002)',M,22);
-  doc.setFillColor(184,75,43); doc.roundedRect(W-M-50,6,50,16,3,3,'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-  doc.text('BOL NUMBER',W-M-25,13,{align:'center'});
-  doc.setFontSize(11); doc.text(bnum||'BOL-????',W-M-25,20,{align:'center'});
+  // ── Header band ──
+  doc.setFillColor(15,23,42); doc.rect(0,0,W,34,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(17); doc.setFont('helvetica','bold');
+  doc.text('STRAIGHT BILL OF LADING',M,12);
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184);
+  doc.text('Motor Carrier — Not Negotiable',M,19);
+  doc.text('Alberta Bill of Lading & Conditions of Carriage Regulation (AR 313/2002)',M,25);
+  // BOL badge
+  doc.setFillColor(37,99,235); doc.roundedRect(W-M-55,7,55,21,3,3,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
+  doc.setFontSize(6.5); doc.text('BOL NUMBER',W-M-27.5,15,{align:'center'});
+  doc.setFontSize(12); doc.text(bnum||'BOL-????',W-M-27.5,24,{align:'center'});
 
-  y=33; doc.setTextColor(44,26,14); doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+  y=40;
+  // Info row
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(71,85,105);
   doc.text('Ship Date: '+(bdate||'—'),M,y);
-  doc.text('Payment: '+(pay||'PREPAID').toUpperCase(),M+60,y);
-  if(haz){doc.setTextColor(184,75,43);doc.setFont('helvetica','bold');doc.text('⚠ HAZMAT — TDG DECLARATION REQUIRED',M+110,y);doc.setTextColor(44,26,14);doc.setFont('helvetica','normal');}
+  doc.text('Payment: '+(pay||'PREPAID').toUpperCase(),M+65,y);
+  if(haz){
+    doc.setFillColor(254,226,226); doc.roundedRect(M+118,y-5.5,W-M-118-M,8,1,1,'F');
+    doc.setTextColor(185,28,28); doc.setFont('helvetica','bold');
+    doc.text('HAZMAT — TDG REQUIRED',M+120,y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(71,85,105);
+  }
+  y+=5;
+  // Blue accent line
+  doc.setDrawColor(37,99,235); doc.setLineWidth(0.5); doc.line(M,y,W-M,y);
   y+=7;
 
-  function box(title,left,right){
-    const bh=Math.max(left.length,right.length)*5+13;
-    doc.setDrawColor(184,75,43); doc.setLineWidth(0.4);
-    doc.rect(M,y,W-M*2,bh);
-    doc.line(M+(W-M*2)/2,y,M+(W-M*2)/2,y+bh);
-    doc.setFillColor(245,240,232); doc.rect(M,y,W-M*2,7,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(130,100,80);
-    doc.text(title,M+3,y+5);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(44,26,14);
-    left.forEach((l,i)=>{if(l)doc.text(l,M+3,y+12+i*5);});
-    right.forEach((r,i)=>{if(r)doc.text(r,M+(W-M*2)/2+3,y+12+i*5);});
-    y+=bh+4;
+  // ── Helper: draw an info box with dark title strip ──
+  function infoBox(x,bx,title,lines){
+    const lh=5, pad=4, titleH=9;
+    const h=titleH+pad+lines.length*lh+2;
+    // Background
+    doc.setFillColor(248,250,252); doc.roundedRect(x,y,bx,h,2,2,'F');
+    doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.roundedRect(x,y,bx,h,2,2,'S');
+    // Title strip
+    doc.setFillColor(15,23,42); doc.roundedRect(x,y,bx,titleH,2,2,'F');
+    doc.rect(x,y+titleH-3,bx,3,'F');
+    doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(147,197,253);
+    doc.text(title,x+pad,y+6);
+    // Lines
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(15,23,42);
+    lines.forEach((l,i)=>{ if(l) doc.text(String(l),x+pad,y+titleH+pad+i*lh); });
+    return h;
   }
 
-  box('SHIPPER (CONSIGNOR)                                                        CARRIER',
-    [sn,sa,'Tel: '+(sp||'—'),'Contact: '+(sc||'—')],
-    [car,'Unit: '+(vu||'—'),'Driver: '+(drv||'—')]);
-  box('CONSIGNEE (RECEIVER)',[cn,ca,'Province: '+cpv,'Tel: '+(cp||'—')],[]);
+  // ── Shipper + Carrier (2-col) ──
+  const bw=(W-M*2-6)/2;
+  const shipH=infoBox(M,bw,'SHIPPER (CONSIGNOR)',[sn,sa,'Tel: '+(sp||'—'),'Contact: '+(sc||'—')]);
+  const carH=infoBox(M+bw+6,bw,'CARRIER',['Name: '+car,'Unit: '+(vu||'—'),'Driver: '+(drv||'—')]);
+  y+=Math.max(shipH,carH)+5;
 
-  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
-  doc.text('FREIGHT DETAILS',M,y); y+=3;
+  // ── Consignee (full width) ──
+  const consH=infoBox(M,W-M*2,'CONSIGNEE (RECEIVER)',[cn,ca,'Province: '+cpv+'  ·  Tel: '+(cp||'—')]);
+  y+=consH+6;
+
+  // ── Freight details table ──
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+  doc.text('FREIGHT DETAILS',M,y); y+=4;
   doc.autoTable({startY:y,
     head:[['Pieces/Pallets','Weight (kg)','Freight Class','Description of Goods','Hazmat?']],
     body:[[pcs||'—',wt?(wt+' kg'):'—',fc||'—',desc||'—',haz?'YES — TDG':'No']],
     margin:{left:M,right:M},
-    headStyles:{fillColor:[44,26,14],textColor:[212,168,67],fontSize:7.5,fontStyle:'bold'},
-    styles:{fontSize:8,cellPadding:3,textColor:[44,26,14]},
-    tableLineColor:[184,75,43],tableLineWidth:0.3});
-  y=doc.lastAutoTable.finalY+5;
+    headStyles:{fillColor:[15,23,42],textColor:[147,197,253],fontSize:7.5,fontStyle:'bold'},
+    styles:{fontSize:8,cellPadding:3,textColor:[15,23,42]},
+    tableLineColor:[226,232,240],tableLineWidth:0.25,
+    alternateRowStyles:{fillColor:[248,250,252]}});
+  y=doc.lastAutoTable.finalY+6;
 
+  // ── Freight charges table ──
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+  doc.text('FREIGHT CHARGES',M,y); y+=4;
   doc.autoTable({startY:y,
-    head:[['Freight Charge','Fuel Surcharge','Total Charges','Declared Value']],
+    head:[['Freight Charge ($)','Fuel Surcharge ($)','Total Charges ($)','Declared Value ($)']],
     body:[['$'+(fchg||'0.00'),'$'+(fsc||'0.00'),'$'+((parseFloat(fchg||0)+parseFloat(fsc||0)).toFixed(2)),dv?'$'+parseFloat(dv).toFixed(2):'—']],
     margin:{left:M,right:M},
-    headStyles:{fillColor:[74,48,32],textColor:[245,240,232],fontSize:7.5,fontStyle:'bold'},
-    styles:{fontSize:8.5,cellPadding:3,textColor:[44,26,14],fontStyle:'bold'},
-    tableLineColor:[184,75,43],tableLineWidth:0.3});
-  y=doc.lastAutoTable.finalY+5;
+    headStyles:{fillColor:[15,23,42],textColor:[147,197,253],fontSize:7.5,fontStyle:'bold'},
+    styles:{fontSize:9,cellPadding:3.5,textColor:[15,23,42],fontStyle:'bold'},
+    tableLineColor:[226,232,240],tableLineWidth:0.25});
+  y=doc.lastAutoTable.finalY+6;
 
+  // ── Special instructions ──
   if(ins){
-    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
+    doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
     doc.text('SPECIAL INSTRUCTIONS',M,y); y+=4;
-    doc.setFont('helvetica','normal'); doc.setTextColor(44,26,14);
-    const il=doc.splitTextToSize(ins,W-M*2); doc.text(il,M,y); y+=il.length*4.5+4;
+    const il=doc.splitTextToSize(ins,W-M*2-8);
+    const insh=il.length*4.5+10;
+    doc.setFillColor(255,251,235); doc.roundedRect(M,y,W-M*2,insh,2,2,'F');
+    doc.setDrawColor(253,230,138); doc.setLineWidth(0.25); doc.roundedRect(M,y,W-M*2,insh,2,2,'S');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(15,23,42);
+    doc.text(il,M+4,y+5.5);
+    y+=insh+5;
   }
 
-  const ty=y+3;
-  doc.setFillColor(245,240,232); doc.rect(M,ty,W-M*2,22,'F');
-  doc.setDrawColor(184,75,43); doc.rect(M,ty,W-M*2,22);
-  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
-  doc.text('CONDITIONS OF CARRIAGE',M+3,ty+5);
-  doc.setFont('helvetica','normal'); doc.setTextColor(80,70,60);
+  // ── Conditions of carriage ──
   const terms='The property described herein is in apparent good order, except as noted (contents and condition of packages unknown), marked, consigned, and destined as indicated, which the carrier agrees to carry to its usual place of delivery at the destination, subject to the Alberta Bill of Lading and Conditions of Carriage Regulation (AR 313/2002) and the federal Motor Vehicle Transport Act (RSC 1970 M-14). This bill of lading must be signed in full by the consignor and carrier.';
-  doc.text(doc.splitTextToSize(terms,W-M*2-6),M+3,ty+9);
-  y=ty+26;
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+  doc.text('CONDITIONS OF CARRIAGE',M,y);
+  doc.setFont('helvetica','normal'); doc.setTextColor(71,85,105);
+  const tlines=doc.splitTextToSize(terms,W-M*2);
+  doc.text(tlines,M,y+4.5);
+  y+=tlines.length*3.5+9;
 
-  const sy=y+3, sw=(W-M*2-8)/3;
-  ['SHIPPER SIGNATURE & DATE','CARRIER SIGNATURE & DATE','RECEIVER SIGNATURE & DATE'].forEach((lbl,i)=>{
+  // ── Signature boxes ──
+  const sw=(W-M*2-8)/3;
+  ['SHIPPER SIGNATURE','CARRIER SIGNATURE','RECEIVER SIGNATURE'].forEach((lbl,i)=>{
     const sx=M+i*(sw+4);
-    doc.setDrawColor(184,75,43); doc.rect(sx,sy,sw,22);
-    doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
-    doc.text(lbl,sx+sw/2,sy+5,{align:'center'});
-    doc.setDrawColor(180,175,165); doc.line(sx+3,sy+16,sx+sw-3,sy+16);
-    doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(170,165,155);
-    doc.text('Sign above',sx+sw/2,sy+20,{align:'center'});
+    // Background + border
+    doc.setFillColor(248,250,252); doc.roundedRect(sx,y,sw,26,2,2,'F');
+    doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.roundedRect(sx,y,sw,26,2,2,'S');
+    // Title strip
+    doc.setFillColor(15,23,42); doc.roundedRect(sx,y,sw,9,2,2,'F');
+    doc.rect(sx,y+5,sw,4,'F');
+    doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(147,197,253);
+    doc.text(lbl,sx+sw/2,y+6,{align:'center'});
+    // Signature line
+    doc.setDrawColor(203,213,225); doc.setLineWidth(0.4); doc.line(sx+4,y+20,sx+sw-4,y+20);
+    doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184);
+    doc.text('Signature & date',sx+sw/2,y+24,{align:'center'});
   });
 
-  doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(150,140,130);
-  doc.text(S.biz+(S.gst?' · GST# '+S.gst:'')+' · '+S.addr,W/2,268,{align:'center'});
+  // Footer
+  doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184);
+  doc.text(S.biz+(S.gst?' · GST# '+S.gst:'')+' · '+S.addr,W/2,272,{align:'center'});
 
   return doc.output('arraybuffer');
 }
