@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mane Attraction — Delivery Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+#err-banner{display:none;position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:white;font-family:monospace;font-size:.8rem;padding:.6rem 1rem;z-index:9999;white-space:pre-wrap;max-height:120px;overflow:auto}
+</style>
+<div id="err-banner"></div>
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  const b = document.getElementById('err-banner');
+  if(b){ b.style.display='block'; b.textContent = '❌ JS Error: ' + msg + '\n  at line ' + line + ', col ' + col + (src ? '\n  in ' + src : ''); }
+  return false;
+};
+window.onunhandledrejection = function(e){
+  const b = document.getElementById('err-banner');
+  if(b){ b.style.display='block'; b.textContent = '❌ Promise error: ' + (e.reason?.message || e.reason); }
+};
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+:root{--rust:#B84B2B;--rust-dk:#8C3420;--hay:#D4A843;--hay-lt:#F2E0B0;--soil:#2C1A0E;--soil-lt:#4A3020;--stone:#F5F0E8;--white:#FDFAF5;--mist:#EDE8DF;--green:#3A6B3A;--green-lt:#EBF2EB;--red-lt:#FCEEE9;--blue:#1A4A8A;--blue-lt:#EAF0FF;--shadow:0 2px 12px rgba(44,26,14,.10);--r:10px;--rl:16px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Source Sans 3',sans-serif;background:var(--stone);color:var(--soil);min-height:100vh}
+header{background:var(--soil);color:var(--white);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:70px;border-bottom:4px solid var(--rust);position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:.75rem}
+.brand-icon{font-size:1.8rem}
+.brand-name{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;line-height:1.1}
+.brand-sub{font-size:.7rem;font-weight:300;color:var(--hay);letter-spacing:.08em;text-transform:uppercase}
+.hbadge{background:var(--rust);color:var(--white);font-size:.7rem;font-weight:700;padding:.25rem .75rem;border-radius:20px;letter-spacing:.05em;text-transform:uppercase}
+.tabs{background:var(--soil-lt);display:flex;padding:0 2rem;overflow-x:auto}
+.tab{color:rgba(255,255,255,.55);font-size:.82rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.75rem 1.25rem;cursor:pointer;border-bottom:3px solid transparent;transition:all .18s;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap}
+.tab:hover{color:rgba(255,255,255,.85)}
+.tab.active{color:var(--hay);border-bottom-color:var(--hay)}
+.main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--white);border-radius:var(--rl);box-shadow:var(--shadow);padding:1.75rem 2rem;margin-bottom:1.25rem}
+.ct{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--rust);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+@media(max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+label{display:block;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soil-lt);margin-bottom:.4rem}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--stone);border:1.5px solid var(--mist);border-radius:var(--r);padding:.6rem .85rem;font-family:inherit;font-size:.95rem;color:var(--soil);transition:border-color .15s,box-shadow .15s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--rust);box-shadow:0 0 0 3px rgba(184,75,43,.12)}
+textarea{resize:vertical;min-height:70px}
+.field{margin-bottom:.85rem}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--mist)}
+.tr:last-child{border-bottom:none}
+.tl{font-size:.9rem;font-weight:600}
+.td{font-size:.78rem;color:#888}
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--mist);border-radius:12px;cursor:pointer;transition:background .2s}
+.slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input:checked+.slider{background:var(--rust)}
+input:checked+.slider::before{transform:translateX(18px)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.85rem}
+.vc{border:2px solid var(--mist);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .15s;text-align:center;background:var(--stone)}
+.vc:hover,.vc.sel{border-color:var(--rust);background:var(--red-lt)}
+.vc.sel{box-shadow:0 0 0 3px rgba(184,75,43,.15)}
+.load-wrap{background:var(--stone);border-radius:var(--r);padding:1rem 1.25rem;margin-top:1rem}
+.lbar-bg{background:var(--mist);border-radius:6px;height:14px;overflow:hidden;margin:.5rem 0}
+.lbar{height:100%;border-radius:6px;transition:width .4s,background .3s}
+.pviz{display:flex;gap:6px;flex-wrap:wrap;margin-top:.75rem}
+.pbox{width:38px;height:38px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;transition:all .2s}
+.pbox.on{background:var(--rust);color:white}
+.pbox.off{background:var(--mist);color:#bbb;border:2px dashed #ccc}
+.sumbox{background:var(--soil);color:var(--white);border-radius:var(--rl);padding:1.75rem 2rem;margin-bottom:1.25rem}
+.sumbox h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--hay);margin-bottom:1rem}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:.9rem}
+.sr:last-child{border-bottom:none}
+.sr.tot{padding-top:.85rem;font-size:1.25rem;font-weight:700;border-top:1px solid rgba(255,255,255,.2);border-bottom:none;color:var(--hay)}
+.sr.dis{color:#7fcc7f}
+.sl{color:rgba(255,255,255,.65)}
+.sv{font-weight:700}
+.alert{border-radius:var(--r);padding:.85rem 1rem;font-size:.875rem;font-weight:600;margin-bottom:.75rem;display:flex;gap:.5rem;align-items:flex-start}
+.aw{background:#FFF8E6;border-left:4px solid var(--hay);color:#7a5700}
+.ao{background:var(--green-lt);border-left:4px solid var(--green);color:var(--green)}
+.ae{background:var(--red-lt);border-left:4px solid var(--rust);color:var(--rust-dk)}
+.ai{background:var(--blue-lt);border-left:4px solid var(--blue);color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;border:none;border-radius:var(--r);font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none;letter-spacing:.02em}
+.bp{background:var(--rust);color:white}.bp:hover{background:var(--rust-dk);transform:translateY(-1px)}
+.bs{background:var(--mist);color:var(--soil)}.bs:hover{background:#d5cfc6}
+.bso{background:var(--soil);color:white}.bso:hover{background:var(--soil-lt)}
+.bb{background:var(--blue);color:white}.bb:hover{background:#0d3570}
+.bsm{padding:.45rem .9rem;font-size:.8rem}
+.blg{padding:.9rem 2rem;font-size:1rem}
+.bbl{width:100%;justify-content:center}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.zpanel{background:linear-gradient(135deg,#1A3A6A 0%,#0d2548 100%);border-radius:var(--rl);padding:1.5rem;margin-bottom:1.25rem;color:white}
+.zpanel h4{font-family:'Playfair Display',serif;font-size:1rem;color:#7EB3FF;margin-bottom:.85rem}
+.zdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.zdot.ok{background:#7fcc7f;box-shadow:0 0 6px rgba(127,204,127,.5)}
+.zdot.err{background:#ff7070}
+.zdot.spin{background:var(--hay);animation:pu 1s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.4}}
+.zf label{color:rgba(255,255,255,.6);font-size:.72rem}
+.zf input,.zf select{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:white}
+.zf input::placeholder{color:rgba(255,255,255,.35)}
+.zf input:focus,.zf select:focus{border-color:#7EB3FF;box-shadow:0 0 0 3px rgba(126,179,255,.2)}
+.sc{background:var(--stone);border:1.5px solid var(--mist);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:.75rem;position:relative}
+.rm{position:absolute;top:.75rem;right:.75rem;background:none;border:none;color:#bbb;cursor:pointer;font-size:1rem;transition:color .15s}
+.rm:hover{color:var(--rust)}
+.rbox{background:linear-gradient(135deg,var(--soil) 0%,var(--soil-lt) 100%);border-radius:var(--rl);padding:1.5rem;color:var(--white);margin-bottom:1.25rem}
+.rbox h4{font-family:'Playfair Display',serif;font-size:1rem;color:var(--hay);margin-bottom:.75rem}
+.rr{display:flex;justify-content:space-between;font-size:.85rem;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.rr .rv{font-weight:700;color:var(--hay)}
+.bols{border:1.5px solid var(--mist);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:.75rem}
+.bols h5{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);margin-bottom:.75rem}
+.bolr{display:flex;gap:1rem;margin-bottom:.5rem}
+.bolf{flex:1}
+.qn{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--rust)}
+.sg{margin-bottom:1.5rem}
+.sg h4{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#999;margin-bottom:.85rem;padding-bottom:.4rem;border-bottom:1px solid var(--mist)}
+.sl-lbl{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:.85rem}
+.pb-ab{background:#E8F4FF;color:#0055A4;display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.72rem;font-weight:700}
+.pb-bc{background:#FFF0E8;color:#B84B2B;display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.72rem;font-weight:700}
+@media(max-width:768px){.main{padding:1rem 1rem 5rem}.card{padding:1.25rem}header{padding:0 1rem}.tabs{padding:0 .5rem}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div><div class="brand-name">Mane Attraction</div>
+    <div class="brand-sub">Feed &amp; Ranch Supply · Mayerthorpe, AB</div></div>
+  </div>
+  <span class="hbadge">Delivery Calculator</span>
+</header>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('calculator',this)">📦 New Quote</button>
+  <button class="tab" onclick="switchTab('bol',this)">📋 Bill of Lading</button>
+  <button class="tab" onclick="switchTab('vehicles',this)">🚚 Vehicles</button>
+  <button class="tab" onclick="switchTab('settings',this)">⚙️ Settings</button>
+</div>
+<div class="main">
+
+<!-- ══ TAB 1: CALCULATOR ══ -->
+<div id="tab-calculator" class="panel active">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+    <div><div class="qn" id="quote-number">Q-0001</div>
+    <div style="font-size:.8rem;color:#888;margin-top:.1rem" id="quote-date"></div></div>
+    <button class="btn bs bsm" onclick="newQuote()">+ New Quote</button>
+  </div>
+
+  <div id="calc-layout" style="display:grid;grid-template-columns:1fr 385px;gap:1.25rem;align-items:start">
+  <div>
+
+    <!-- CUSTOMER -->
+    <div class="card">
+      <div class="ct">👤 Customer &amp; Delivery</div>
+      <div class="g2">
+        <div class="field"><label>Customer Name</label><input type="text" id="cust-name" placeholder="Full name or business"></div>
+        <div class="field"><label>Phone / Email</label><input type="text" id="cust-contact" placeholder="Phone or email"></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Delivery Address</label><input type="text" id="cust-address" placeholder="Street address, town"></div>
+        <div class="field"><label>Province</label>
+          <select id="cust-province" onchange="calculate()">
+            <option value="AB">Alberta (AB)</option>
+            <option value="BC">British Columbia (BC) — Wholesale</option>
+          </select>
+        </div>
+      </div>
+      <div id="bc-notice" class="alert aw" style="display:none">⚠️ BC wholesale delivery — carbon tax differential (~15%) applied. Commercial vehicle permit may be required for loads over threshold.</div>
+      <div class="field">
+        <label>One-way distance from Mayerthorpe (km)</label>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input type="number" id="km-dist" min="1" max="2500" placeholder="e.g. 120" oninput="calculate()" style="max-width:180px">
+          <span style="font-size:.82rem;color:#888">km one-way</span>
+        </div>
+      </div>
+      <div class="field"><label>Delivery Date</label><input type="date" id="deliv-date"></div>
+    </div>
+
+    <!-- VEHICLE -->
+    <div class="card">
+      <div class="ct">🚚 Vehicle / Carrier</div>
+      <div class="vgrid" id="vgrid"></div>
+      <div id="trailer-row" style="display:none;margin-top:1rem" class="field">
+        <label>Rented trailer deck length (ft) — updates pallet capacity</label>
+        <div style="display:flex;gap:.75rem;align-items:center">
+          <input type="number" id="trailer-ft" min="10" max="53" value="24" oninput="calculate()" style="max-width:90px">
+          <span style="font-size:.82rem;color:#666" id="trailer-cap-note"></span>
+        </div>
+      </div>
+      <div class="load-wrap" id="load-wrap" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:.9rem">Load Analysis</span>
+          <span style="font-weight:700;font-size:.82rem" id="load-status"></span>
+        </div>
+        <div class="lbar-bg"><div class="lbar" id="lbar"></div></div>
+        <div style="font-size:.8rem;color:#666" id="load-detail"></div>
+        <div class="pviz" id="pviz"></div>
+        <div id="bal-note" style="font-size:.78rem;margin-top:.5rem;color:#777"></div>
+      </div>
+    </div>
+
+    <!-- ORDER -->
+    <div class="card">
+      <div class="ct">📦 Order / Load Details</div>
+      <div class="g2">
+        <div class="field"><label>Pallets</label><input type="number" id="pallets" min="0" max="40" value="0" oninput="calculate()"></div>
+        <div class="field"><label>Pieces / Bags (not on pallets)</label><input type="number" id="pieces" min="0" value="0" oninput="calculate()" placeholder="Loose bags, tubs, etc."></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Est. Total Weight (kg)</label><input type="number" id="weight" min="0" placeholder="e.g. 1200" oninput="calculate()"></div>
+        <div class="field"><label>Order Value ($)</label><input type="number" id="order-val" min="0" placeholder="e.g. 1500" oninput="calculate()"></div>
+      </div>
+      <div class="field"><label>Order / Product Notes</label><textarea id="order-notes" placeholder="Feed type, special handling, hazardous goods, etc."></textarea></div>
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="card">
+      <div class="ct">🎛️ Delivery Options</div>
+      <div class="tr">
+        <div><div class="tl">Free Delivery Override</div><div class="td">Manually waive delivery cost for this customer</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-free" onchange="calculate()"><span class="slider"></span></label>
+      </div>
+      <div class="tr">
+        <div><div class="tl">Round Trip</div><div class="td">Charge for return leg (recommended — truck returns empty)</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-rt" checked onchange="calculate()"><span class="slider"></span></label>
+      </div>
+      <div class="tr">
+        <div><div class="tl">Split Delivery</div><div class="td">Share route with another customer — cost split by km leg</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-split" onchange="toggleSplit()"><span class="slider"></span></label>
+      </div>
+      <div id="split-sec" style="display:none;margin-top:1rem">
+        <div class="sl-lbl">Co-delivery Customers</div>
+        <div class="alert ai" style="margin-bottom:.75rem">ℹ️ <strong>Split by km leg:</strong> Total route cost is calculated once, then each customer pays their proportional share of the total km. Fairest method — easy to explain.</div>
+        <div id="split-list"></div>
+        <button class="btn bs bsm" onclick="addSplit()">+ Add Customer</button>
+      </div>
+      <div class="tr">
+        <div><div class="tl">Apply Discount</div><div class="td">Volume, loyalty, or promotional discount</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-dsc" onchange="toggleDsc()"><span class="slider"></span></label>
+      </div>
+      <div id="dsc-sec" style="display:none;margin-top:.75rem">
+        <div class="g2">
+          <div class="field"><label>Type</label><select id="dsc-type" onchange="calculate()"><option value="percent">Percentage (%)</option><option value="flat">Flat ($)</option></select></div>
+          <div class="field"><label>Amount</label><input type="number" id="dsc-amt" min="0" value="10" oninput="calculate()"></div>
+        </div>
+        <div class="field"><label>Reason (shown on PDF)</label><input type="text" id="dsc-reason" placeholder="e.g. Loyalty discount, Volume order"></div>
+      </div>
+    </div>
+
+  </div><!-- left -->
+
+  <!-- RIGHT -->
+  <div>
+    <div class="sumbox">
+      <h3>💵 Delivery Quote</h3>
+      <div id="sum-rows"></div>
+    </div>
+
+    <div id="alerts-box"></div>
+
+    <!-- ZOHO PANEL -->
+    <div class="zpanel">
+      <h4>🔗 Zoho Books Integration</h4>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem">
+        <div class="zdot" id="zdot"></div>
+        <span id="zstatus" style="color:rgba(255,255,255,.65);font-size:.82rem">Configure token in Settings</span>
+      </div>
+      <div class="zf field">
+        <label>Zoho Estimate / Quote Number</label>
+        <input type="text" id="z-ref" placeholder="e.g. EST-000123" oninput="clearZoho()">
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+        <button class="btn bb bsm" onclick="zLookup()">🔍 Lookup</button>
+        <button class="btn bb bsm" id="z-push-btn" onclick="zPush()" disabled>⬆️ Push Trucking Cost</button>
+        <button class="btn bsm" style="background:rgba(255,255,255,.15);color:white" id="z-bol-btn" onclick="zAttachBOL()" disabled>📎 Attach BOL PDF</button>
+      </div>
+      <div id="z-msg" style="margin-top:.65rem;font-size:.8rem;color:rgba(255,255,255,.7)"></div>
+    </div>
+
+    <div class="card" style="padding:1.25rem">
+      <div class="ct" style="font-size:.95rem;margin-bottom:.85rem">Rate Breakdown</div>
+      <div id="rate-panel"></div>
+    </div>
+
+    <div style="display:flex;gap:.75rem;flex-direction:column">
+      <button class="btn bp bbl blg" onclick="genQuotePDF()">📄 Export Quote PDF</button>
+      <button class="btn bso bbl" onclick="goToBOL()">📋 Generate Bill of Lading</button>
+    </div>
+  </div>
+
+  </div><!-- calc-layout -->
+</div>
+
+<!-- ══ TAB 2: BOL ══ -->
+<div id="tab-bol" class="panel">
+  <div class="card">
+    <div class="ct">📋 Bill of Lading — Canada Compliant</div>
+    <p style="font-size:.85rem;color:#666;margin-bottom:1rem">Alberta <em>Bill of Lading &amp; Conditions of Carriage Regulation (AR 313/2002)</em> and federal <em>Motor Vehicle Transport Act</em>.</p>
+    <button class="btn bs bsm" onclick="populateBOL()" style="margin-bottom:1.25rem">📥 Pull from Current Quote</button>
+
+    <div class="bols"><h5>📍 Shipper (Consignor)</h5>
+      <div class="bolr">
+        <div class="bolf field"><label>Company Name</label><input type="text" id="b-sname" value="Mane Attraction Feed &amp; Ranch Supply"></div>
+        <div class="bolf field"><label>Address</label><input type="text" id="b-saddr" value="Mayerthorpe, AB T0E 1N0"></div>
+      </div>
+      <div class="bolr">
+        <div class="bolf field"><label>Phone</label><input type="text" id="b-sphone" value="825-900-5941"></div>
+        <div class="bolf field"><label>Contact</label><input type="text" id="b-scontact" placeholder="Driver / dispatcher name"></div>
+      </div>
+    </div>
+
+    <div class="bols"><h5>📦 Consignee (Receiver)</h5>
+      <div class="bolr">
+        <div class="bolf field"><label>Name</label><input type="text" id="b-cname" placeholder="Customer name"></div>
+        <div class="bolf field"><label>Delivery Address</label><input type="text" id="b-caddr" placeholder="Full address"></div>
+      </div>
+      <div class="bolr">
+        <div class="bolf field"><label>Phone</label><input type="text" id="b-cphone" placeholder="Customer phone"></div>
+        <div class="bolf field"><label>Province</label><select id="b-cprov"><option value="AB">AB</option><option value="BC">BC</option></select></div>
+      </div>
+    </div>
+
+    <div class="bols"><h5>🚛 Carrier</h5>
+      <div class="bolr">
+        <div class="bolf field"><label>Carrier Name</label><input type="text" id="b-carrier" value="Mane Attraction Feed &amp; Ranch Supply"></div>
+        <div class="bolf field"><label>Vehicle / Unit #</label><input type="text" id="b-unit" value="Ram 5500 — AB CVY-1408"></div>
+      </div>
+      <div class="bolr">
+        <div class="bolf field"><label>Driver</label><input type="text" id="b-driver" placeholder="Driver full name"></div>
+        <div class="bolf field"><label>BOL Number</label><input type="text" id="b-bolnum"></div>
+      </div>
+    </div>
+
+    <div class="bols"><h5>📋 Freight Details</h5>
+      <div class="g3">
+        <div class="field"><label>Ship Date</label><input type="date" id="b-date"></div>
+        <div class="field"><label>Pieces / Pallets</label><input type="number" id="b-pieces" placeholder="e.g. 2"></div>
+        <div class="field"><label>Weight (kg)</label><input type="number" id="b-weight" placeholder="e.g. 1200"></div>
+      </div>
+      <div class="field"><label>Description of Goods</label><textarea id="b-desc" placeholder="e.g. Horse feed (bagged), 25 kg bags × 48 — 2 pallets. Non-hazardous."></textarea></div>
+      <div class="g2">
+        <div class="field"><label>Freight Classification</label><input type="text" id="b-class" placeholder="e.g. NMFC 017000 — Feed, bagged"></div>
+        <div class="field"><label>Declared Value ($)</label><input type="number" id="b-val" placeholder="e.g. 1500.00"></div>
+      </div>
+      <div class="tr" style="margin-top:.5rem">
+        <div><div class="tl">Hazardous Materials (TDG)</div><div class="td">UN number + CANUTEC 1-888-226-8832 required if yes</div></div>
+        <label class="toggle"><input type="checkbox" id="b-hazmat" onchange="document.getElementById('b-hazwarn').style.display=this.checked?'flex':'none'"><span class="slider"></span></label>
+      </div>
+      <div id="b-hazwarn" class="alert aw" style="display:none;margin-top:.75rem">⚠️ TDG: Include UN number, shipping name, hazard class, packing group, and CANUTEC emergency contact.</div>
+      <div class="field" style="margin-top:.75rem"><label>Special Instructions</label><textarea id="b-instr" placeholder="Tail-gate delivery, call ahead, fragile, etc."></textarea></div>
+    </div>
+
+    <div class="bols"><h5>💰 Freight Charges</h5>
+      <div class="g3">
+        <div class="field"><label>Payment</label><select id="b-pay"><option value="prepaid">Prepaid (shipper pays)</option><option value="collect">Collect (receiver pays)</option><option value="third-party">Third Party</option></select></div>
+        <div class="field"><label>Freight Charge ($)</label><input type="number" id="b-fchg" placeholder="0.00"></div>
+        <div class="field"><label>Fuel Surcharge ($)</label><input type="number" id="b-fsc" placeholder="0.00"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem;align-items:center">
+      <button class="btn bp blg" onclick="genBOLPDF()">📄 Export BOL PDF</button>
+      <button class="btn bb" id="bol-attach-btn" onclick="zAttachBOL()" disabled>📎 Attach to Zoho Quote</button>
+    </div>
+    <div id="bol-attach-msg" style="margin-top:.65rem;font-size:.85rem;color:#666"></div>
+  </div>
+</div>
+
+<!-- ══ TAB 3: VEHICLES ══ -->
+<div id="tab-vehicles" class="panel">
+  <div class="card">
+    <div class="ct">🚚 Vehicle &amp; Carrier Management</div>
+    <p style="font-size:.85rem;color:#666;margin-bottom:1.25rem">Rate multiplier is applied on top of your base $/km setting. Toggle active/inactive to show or hide in the calculator.</p>
+    <div id="vlist"></div>
+    <div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap">
+      <button class="btn bs" onclick="addVehicle()">+ Add Vehicle / Carrier</button>
+      <button class="btn bs bsm" onclick="resetVehicles()" style="color:var(--rust)">↺ Reset to Defaults</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">📏 Load Reference</div>
+    <div class="rbox">
+      <h4>Pallet &amp; Capacity Reference</h4>
+      <div class="rr"><span>Standard pallet (GMA)</span><span class="rv">48″×40″ (122×102 cm)</span></div>
+      <div class="rr"><span>Max loaded pallet height</span><span class="rv">~1.8m / 6ft</span></div>
+      <div class="rr"><span>Max pallet weight (this operation)</span><span class="rv">2,200 lb / 998 kg each</span></div>
+      <div class="rr"><span>Ram 5500 flatdeck payload</span><span class="rv">11,800 lb (5,352 kg) · 4 pallets max · GVW 5,450 kg</span></div>
+      <div class="rr"><span>Gooseneck trailer capacity</span><span class="rv">8 pallets · 7,983 kg max (truck flatdeck empty when towing)</span></div>
+      <div class="rr"><span>Ram 5500 fuel — truck only</span><span class="rv">~22 L/100km</span></div>
+      <div class="rr"><span>Ram 5500 fuel — full gooseneck</span><span class="rv">~28 L/100km</span></div>
+    </div>
+    <div class="alert aw">⚖️ <strong>Gooseneck load balance:</strong> Target 60% of total load weight forward of the axles. Place heaviest pallets toward the hitch end. Always verify trailer-specific weight ratings before loading.</div>
+  </div>
+</div>
+
+<!-- ══ TAB 4: SETTINGS ══ -->
+<div id="tab-settings" class="panel">
+  <div class="card">
+    <div class="ct">⚙️ Rate &amp; Company Settings</div>
+
+    <div class="rbox" style="margin-bottom:1.25rem">
+      <h4>📊 Rate Research — Mayerthorpe, AB (2025/26)</h4>
+      <div class="rr"><span>Alberta diesel avg (late 2025)</span><span class="rv">~$1.63/L</span></div>
+      <div class="rr"><span>Ram 5500 Cummins 6.7L — truck only</span><span class="rv">~22 L/100km</span></div>
+      <div class="rr"><span>Ram 5500 + full gooseneck load</span><span class="rv">~28 L/100km</span></div>
+      <div class="rr"><span>Fuel cost/km — truck only (both ways)</span><span class="rv">~$0.72/km</span></div>
+      <div class="rr"><span>Fuel cost/km — full gooseneck (both ways)</span><span class="rv">~$0.91/km</span></div>
+      <div class="rr"><span>Maintenance + insurance (est.)</span><span class="rv">~$0.35–$0.60/km</span></div>
+      <div class="rr"><span>Driver wage (est. $22/hr @ 80 km/h)</span><span class="rv">~$0.55/km both ways</span></div>
+      <div class="rr"><span><strong>Break-even — truck only (11,800 lb / 5,352 kg payload)</strong></span><span class="rv"><strong>~$1.62–$1.87/km</strong></span></div>
+      <div class="rr"><span><strong>Break-even — full gooseneck</strong></span><span class="rv"><strong>~$1.81–$2.06/km</strong></span></div>
+      <div class="rr"><span>Suggested charge rate (with profit margin)</span><span class="rv">$2.00–$2.75/km</span></div>
+      <div class="rr"><span>Typical fuel surcharge</span><span class="rv">10–15% of base</span></div>
+      <p style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:.75rem">Fuel costs based on $1.63/L Alberta diesel. Adjust monthly. Gooseneck ×1.3 rate multiplier accounts for higher fuel + operating cost.</p>
+    </div>
+
+    <div class="sg"><h4>Base Rate</h4>
+      <div class="g2">
+        <div class="field"><label>Base rate ($/km one-way)</label><input type="number" id="s-rate" step="0.05" min="0.5" max="15" value="2.10" oninput="saveS();calculate()"></div>
+        <div class="field"><label>Minimum delivery charge ($)</label><input type="number" id="s-min" step="5" min="0" value="75" oninput="saveS();calculate()"></div>
+      </div>
+    </div>
+
+    <div class="sg"><h4>Fuel Surcharge</h4>
+      <div class="g3">
+        <div class="field"><label>Surcharge type</label><select id="s-sctype" onchange="saveS();calculate()"><option value="percent">% of base charge</option><option value="per-km">$/km flat</option><option value="flat">Flat $ amount</option></select></div>
+        <div class="field"><label>Surcharge value</label><input type="number" id="s-scval" step="0.5" min="0" value="12" oninput="saveS();calculate()"></div>
+        <div class="field"><label>Round trip (default factor)</label><select id="s-rt" onchange="saveS();calculate()"><option value="2">×2 full round trip</option><option value="1.5">×1.5 partial return</option><option value="1">×1 one-way only</option></select></div>
+      </div>
+    </div>
+
+    <div class="sg"><h4>Company Info (PDFs &amp; BOL)</h4>
+      <div class="g2">
+        <div class="field"><label>Business name</label><input type="text" id="s-biz" value="Mane Attraction Feed &amp; Ranch Supply" oninput="saveS()"></div>
+        <div class="field"><label>Phone</label><input type="text" id="s-phone" value="825-900-5941" oninput="saveS()"></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Email</label><input type="text" id="s-email" value="office@maneattraction.ca" oninput="saveS()"></div>
+        <div class="field"><label>GST #</label><input type="text" id="s-gst" value="768030306RT0001" oninput="saveS()"></div>
+      </div>
+      <div class="field"><label>Address</label><input type="text" id="s-addr" value="Mayerthorpe, Alberta T0E 1N0" oninput="saveS()"></div>
+    </div>
+
+    <button class="btn bp" onclick="saveS();alert('Settings saved!')">💾 Save Settings</button>
+  </div>
+</div>
+
+</div><!-- .main -->
+<script>
+// ══════════════════ STATE ══════════════════
+let QC = parseInt(localStorage.getItem('ma_qc')||'1');
+let splits = [];
+let selV = 'ram5500';
+let _zId = null;
+
+const DEF = {
+  rate:2.10, min:75, sctype:'percent', scval:12, rt:2,
+  biz:'Mane Attraction Feed & Ranch Supply',
+  phone:'825-900-5941', email:'office@maneattraction.ca',
+  gst:'768030306RT0001', addr:'Mayerthorpe, Alberta T0E 1N0',
+  zorg:'110002246605', zfunc:''
+};
+let S = {...DEF};
+
+// ── Vehicle defaults — version stamp forces refresh if specs change ──
+// Bump VV_VER any time DEF_V specs change to clear stale localStorage
+const VV_VER = 3;
+const DEF_V = [
+  {id:'ram5500', name:'Ram 5500 (CVY-1408)',   icon:'🛻',mp:4,  mw:5352, deck:0,  rm:1.0, tp:'own',        u:'AB CVY-1408',on:true},
+  {id:'goose',   name:'Ram 5500 + Gooseneck',  icon:'🚛',mp:8,  mw:7983, deck:24, rm:1.3, tp:'own',        u:'AB CVY-1408',on:true},
+  {id:'3rdp',    name:'3rd Party Carrier',      icon:'📦',mp:99, mw:40000,deck:0,  rm:1.8, tp:'third-party',u:'',           on:true},
+];
+function loadVehicles(){
+  const stored = localStorage.getItem('ma_vv');
+  const ver    = parseInt(localStorage.getItem('ma_vv_ver')||'0');
+  if(stored && ver >= VV_VER){
+    return JSON.parse(stored);
+  }
+  // Stale or missing — use fresh defaults and save them
+  localStorage.setItem('ma_vv', JSON.stringify(DEF_V));
+  localStorage.setItem('ma_vv_ver', String(VV_VER));
+  return JSON.parse(JSON.stringify(DEF_V));
+}
+let VV = loadVehicles();
+
+// ══════════════════ INIT ══════════════════
+function init(){
+  loadS(); setQDate(); renderVGrid(); renderVList(); calculate();
+  const t=new Date().toISOString().split('T')[0];
+  G('deliv-date').value=t; G('b-date').value=t;
+  G('b-bolnum').value='BOL-'+pad(QC);
+}
+function setQDate(){
+  G('quote-number').textContent='Q-'+pad(QC);
+  G('quote-date').textContent=new Date().toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+function G(id){return document.getElementById(id)}
+function V(id){return G(id)?.value||''}
+function pad(n){return String(n).padStart(4,'0')}
+
+// ══════════════════ SETTINGS ══════════════════
+function loadS(){
+  const sv=JSON.parse(localStorage.getItem('ma_s')||'{}');
+  S={...DEF,...sv};
+  G('s-rate').value=S.rate; G('s-min').value=S.min;
+  G('s-sctype').value=S.sctype; G('s-scval').value=S.scval;
+  G('s-rt').value=S.rt;
+  G('s-biz').value=S.biz; G('s-phone').value=S.phone;
+  G('s-email').value=S.email; G('s-gst').value=S.gst; G('s-addr').value=S.addr;
+  // Zoho fields removed from Settings UI — update state only, no DOM access
+  updateZSt();
+}
+function saveS(){
+  S.rate=parseFloat(V('s-rate'))||2.10; S.min=parseFloat(V('s-min'))||75;
+  S.sctype=V('s-sctype'); S.scval=parseFloat(V('s-scval'))||12;
+  S.rt=parseFloat(V('s-rt'))||2;
+  S.biz=V('s-biz'); S.phone=V('s-phone'); S.email=V('s-email');
+  S.gst=V('s-gst'); S.addr=V('s-addr');
+  // Zoho org/func stored in DEF — not editable from UI, preserved across saves
+  localStorage.setItem('ma_s',JSON.stringify(S));
+  updateZSt();
+}
+
+// ══════════════════ TABS ══════════════════
+function switchTab(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  G('tab-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// ══════════════════ VEHICLES ══════════════════
+function renderVGrid(){
+  const g=G('vgrid'); g.innerHTML='';
+  VV.filter(v=>v.on).forEach(v=>{
+    const mp=v.mp; // use stored value; gooseneck fixed at 8
+    const d=document.createElement('div');
+    d.className='vc'+(v.id===selV?' sel':'');
+    d.onclick=()=>selectV(v.id);
+    d.innerHTML=`<div style="font-size:2rem;margin-bottom:.5rem">${v.icon}</div>
+      <div style="font-weight:700;font-size:.9rem">${v.name}</div>
+      <div style="font-size:.75rem;color:#666;margin-top:.25rem">${mp<99?mp+' pallets max':'Carrier rate'}</div>
+      <div style="font-size:.75rem;color:var(--rust);font-weight:700;margin-top:.25rem">${v.rm!==1?'×'+v.rm+' rate':'Base rate'}</div>`;
+    g.appendChild(d);
+  });
+  const v=VV.find(v=>v.id===selV);
+  G('trailer-row').style.display=(v&&v.id==='goose')?'block':'none';
+  updateTrailerNote();
+}
+function updateTrailerNote(){
+  const ft=parseFloat(V('trailer-ft'))||24;
+  const n=G('trailer-cap-note');
+  // Max 8 pallets @ 2,200 lb each on trailer; truck flatdeck not loaded when gooseneck hitched
+  if(n) n.textContent=`${ft}ft rented deck · Max 8 pallets (2,200 lb / 998 kg each) · 7,983 kg trailer limit · Truck flatdeck empty when towing`;
+}
+function selectV(id){selV=id;renderVGrid();calculate();}
+function renderVList(){
+  const l=G('vlist'); l.innerHTML='';
+  VV.forEach((v,i)=>{
+    const d=document.createElement('div');
+    d.className='sc';
+    d.innerHTML=`<div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+      <span style="font-size:1.5rem">${v.icon}</span>
+      <div style="flex:1"><div style="font-weight:700">${v.name}</div>
+        <div style="font-size:.78rem;color:#888">${v.tp==='third-party'?'3rd Party':'Own Fleet'} · ${v.deck?v.deck+'ft deck':'N/A'}</div>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <div><label style="text-transform:none;font-size:.72rem;color:#999">Rate ×</label>
+          <input type="number" step="0.05" min="0.5" max="5" value="${v.rm}" style="width:70px" onchange="upV(${i},'rm',this.value)"></div>
+        <div><label style="text-transform:none;font-size:.72rem;color:#999">Unit #</label>
+          <input type="text" placeholder="Plate/unit" value="${v.u||''}" style="width:110px" onchange="upV(${i},'u',this.value)"></div>
+        <label class="toggle"><input type="checkbox" ${v.on?'checked':''} onchange="upV(${i},'on',this.checked)"><span class="slider"></span></label>
+        ${i>2?`<button class="rm" onclick="delV(${i})">✕</button>`:''}
+      </div></div>`;
+    l.appendChild(d);
+  });
+}
+function saveVehicles(){
+  localStorage.setItem('ma_vv', JSON.stringify(VV));
+  localStorage.setItem('ma_vv_ver', String(VV_VER));
+}
+function upV(i,f,val){
+  if(f==='rm') VV[i][f]=parseFloat(val);
+  else if(f==='on') VV[i][f]=val;
+  else VV[i][f]=val;
+  saveVehicles();
+  renderVGrid(); calculate();
+}
+function delV(i){VV.splice(i,1);saveVehicles();renderVList();renderVGrid();}
+function addVehicle(){
+  VV.push({id:'v_'+Date.now(),name:'New Carrier',icon:'🚚',mp:20,mw:5000,deck:0,rm:1.5,tp:'third-party',u:'',on:true});
+  saveVehicles();
+  renderVList();renderVGrid();
+}
+function resetVehicles(){
+  if(!confirm('Reset all vehicles to default specs? Custom additions will be lost.')) return;
+  VV = JSON.parse(JSON.stringify(DEF_V));
+  saveVehicles();
+  renderVList(); renderVGrid(); calculate();
+  alert('Vehicles reset to defaults.');
+}
+
+// ══════════════════ SPLIT ══════════════════
+function toggleSplit(){
+  const on=G('tog-split').checked;
+  G('split-sec').style.display=on?'block':'none';
+  if(on&&splits.length===0) addSplit();
+  calculate();
+}
+function addSplit(){splits.push({id:Date.now(),name:'',km:''});renderSplits();}
+function renderSplits(){
+  const b=G('split-list'); b.innerHTML='';
+  splits.forEach((sc,i)=>{
+    const d=document.createElement('div'); d.className='sc';
+    d.innerHTML=`<button class="rm" onclick="delSplit(${i})">✕</button>
+      <div class="g2">
+        <div class="field"><label>Customer</label><input type="text" value="${sc.name}" placeholder="Name" oninput="splits[${i}].name=this.value"></div>
+        <div class="field"><label>Their km from Mayerthorpe</label><input type="number" min="1" value="${sc.km}" placeholder="km" oninput="splits[${i}].km=this.value;calculate()"></div>
+      </div>`;
+    b.appendChild(d);
+  });
+}
+function delSplit(i){splits.splice(i,1);renderSplits();calculate();}
+function toggleDsc(){G('dsc-sec').style.display=G('tog-dsc').checked?'block':'none';calculate();}
+
+// ══════════════════ CALCULATE ══════════════════
+function calculate(){
+  try { _calculate(); }
+  catch(e){
+    const b=document.getElementById('err-banner');
+    if(b){ b.style.display='block'; b.textContent='❌ Calculate error: '+e.message+'\n'+e.stack; }
+    console.error('calculate() failed:',e);
+  }
+}
+function _calculate(){
+  const km    = parseFloat(V('km-dist'))||0;
+  const pals  = parseInt(V('pallets'))||0;
+  const pcs   = parseInt(V('pieces'))||0;
+  const wt    = parseFloat(V('weight'))||0;
+  const oval  = parseFloat(V('order-val'))||0;
+  const free  = G('tog-free').checked;
+  const rtOn  = G('tog-rt').checked;   // round trip toggle
+  const split = G('tog-split').checked;
+  const dsc   = G('tog-dsc').checked;
+  const prov  = V('cust-province')||'AB';
+  const v     = VV.find(v=>v.id===selV)||VV[0];
+
+  // Gooseneck: trailer-only capacity, truck flatdeck empty when towing
+  let maxP = v.mp;
+  if(v.id==='goose'){ maxP=8; updateTrailerNote(); }
+
+  renderLoad(pals, pcs, wt, maxP, v);
+  G('bc-notice').style.display = prov==='BC' ? 'flex' : 'none';
+
+  // Round trip: toggle on the main page overrides settings
+  const rt = rtOn ? parseFloat(V('s-rt'))||2 : 1;
+
+  // Rates
+  const rpk  = S.rate * v.rm;
+  const tot  = km * rt;
+  const base = Math.max(tot * rpk, km > 0 ? S.min : 0);
+  let   fuel = S.sctype==='percent' ? base*(S.scval/100)
+             : S.sctype==='per-km'  ? tot*S.scval
+             : parseFloat(S.scval)||0;
+  const bc   = prov==='BC' ? (base+fuel)*0.15 : 0;
+  let   sub  = base + fuel + bc;
+
+  // Split by km leg
+  let frac = 1;
+  if(split && splits.length > 0){
+    const allkm = [km, ...splits.map(s => parseFloat(s.km)||0)];
+    const sum   = allkm.reduce((a,b)=>a+b, 0);
+    frac = sum > 0 ? km/sum : 1;
+    sub *= frac;
+  }
+
+  // Discount
+  let da = 0;
+  if(dsc){
+    const dt = V('dsc-type'), dv = parseFloat(V('dsc-amt'))||0;
+    da = dt==='percent' ? sub*(dv/100) : dv;
+    da = Math.min(da, sub);
+  }
+
+  const charge = free ? 0 : Math.max(sub-da, 0);
+  const gst    = charge * 0.05;
+  const total  = charge + gst;
+
+  // Summary rows
+  const rows=G('sum-rows'); rows.innerHTML='';
+  function sr(l,val,cls=''){
+    const r=document.createElement('div'); r.className='sr '+cls;
+    r.innerHTML=`<span class="sl">${l}</span><span class="sv">${val}</span>`;
+    rows.appendChild(r);
+  }
+  if(km>0){
+    sr('Distance (one-way)', km.toLocaleString()+' km');
+    sr('Round trip', rtOn ? '×'+rt+' (return included)' : '×1 one-way only');
+    sr('Base charge ('+v.name+' ×'+v.rm+')', '$'+base.toFixed(2));
+    sr('Fuel surcharge', '$'+fuel.toFixed(2));
+    if(bc>0) sr('BC carbon premium (~15%)', '$'+bc.toFixed(2));
+    if(split&&frac<1) sr('Your share ('+Math.round(frac*100)+'% of route)', '');
+    if(da>0) sr('Discount'+(V('dsc-reason')?' — '+V('dsc-reason'):''), '−$'+da.toFixed(2), 'dis');
+    if(free) sr('Delivery waived', '−$'+sub.toFixed(2), 'dis');
+  } else sr('Enter distance above', '—');
+  sr('Delivery charge', free?'$0.00':'$'+charge.toFixed(2));
+  sr('GST (5%)', '$'+gst.toFixed(2));
+  sr('TOTAL', '$'+total.toFixed(2), 'tot');
+
+  // Rate panel
+  G('rate-panel').innerHTML=`
+    <div class="rr" style="font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--mist)"><span>Rate/km</span><span style="font-weight:700">$${rpk.toFixed(2)}/km</span></div>
+    <div class="rr" style="font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--mist)"><span>Fuel surcharge</span><span style="font-weight:700">${S.sctype==='percent'?S.scval+'%':'$'+S.scval}</span></div>
+    <div class="rr" style="font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--mist)"><span>Round trip</span><span style="font-weight:700">${rtOn?'Yes (×'+rt+')':'No (×1)'}</span></div>
+    <div class="rr" style="font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--mist)"><span>Vehicle</span><span style="font-weight:700">${v.name}</span></div>
+    <div class="rr" style="font-size:.82rem;padding:.3rem 0"><span>Province</span><span class="${prov==='BC'?'pb-bc':'pb-ab'}">${prov}</span></div>`;
+
+  renderAlerts(pals, pcs, wt, v, maxP, km, free);
+
+  window._C={km,pals,pcs,wt,oval,base,fuel,bc,sub,da,charge,gst,total,free,v,frac,split,prov,rpk,rt,rtOn};
+}
+
+function renderLoad(pals,pcs,wt,maxP,v){
+  const w=G('load-wrap');
+  if(v.mp>=99){w.style.display='none';return;}
+  w.style.display='block';
+  const pp=maxP>0?Math.min(pals/maxP,1):0;
+  // Weight check: 11,800 lb payload = 5,352 kg (truck); 7,983 kg (trailer)
+  const wp=v.mw>0&&wt>0?Math.min(wt/v.mw,1):0;
+  const pct=Math.max(pp,wp);
+  const bar=G('lbar');
+  bar.style.width=(pct*100).toFixed(0)+'%';
+  bar.style.background=pct>.9?'#c0392b':pct>.75?'#e67e22':'#3A6B3A';
+  const overP=pals>maxP;
+  const overW=wt>0&&wt>v.mw;
+  G('load-status').textContent=(overP||overW)?'⚠️ Over Limit':pct>.85?'⚠️ Near Limit':pct>0?'✅ OK':'';
+  const wtStr=wt>0?` · ${wt.toLocaleString()} / ${v.mw.toLocaleString()} kg`:'';
+  G('load-detail').textContent=`${pals} / ${maxP} pallets${wtStr}${pcs>0?' · '+pcs+' loose piece'+(pcs!==1?'s':''):''}`;
+  const viz=G('pviz'); viz.innerHTML='';
+  const slots=Math.min(Math.max(maxP,pals),16);
+  for(let i=0;i<slots;i++){
+    const b=document.createElement('div');
+    b.className='pbox '+(i<pals?'on':'off');
+    b.textContent=i<pals?'📦':'';
+    viz.appendChild(b);
+  }
+  if(pcs>0){
+    const pb=document.createElement('div');
+    pb.style.cssText='font-size:.72rem;color:#888;margin-top:.35rem;width:100%';
+    pb.textContent=`+ ${pcs} loose piece${pcs!==1?'s':''} (not palletized)`;
+    viz.appendChild(pb);
+  }
+  let bal='';
+  if(v.id==='goose'&&pals>0) bal='⚖️ Load balance: heaviest pallets toward hitch. Target 60% of weight forward of axles.';
+  G('bal-note').textContent=bal;
+}
+
+function renderAlerts(pals,pcs,wt,v,maxP,km,free){
+  const b=G('alerts-box'); b.innerHTML='';
+  function a(cls,msg){const d=document.createElement('div');d.className='alert '+cls;d.innerHTML=msg;b.appendChild(d);}
+
+  // ── Pallet overload ──
+  if(pals>maxP && v.mp<99){
+    let suggest='';
+    if(v.id==='ram5500' && pals<=8)
+      suggest=' → <strong>Switch to Ram 5500 + Gooseneck</strong> (8 pallet capacity).';
+    else if(pals>8)
+      suggest=' → <strong>Use 3rd Party Carrier</strong> for loads over 8 pallets.';
+    else
+      suggest=' → Consider Ram 5500 + Gooseneck or a 3rd Party Carrier.';
+    a('ae',`⚠️ <strong>${pals} pallets exceeds ${v.name} capacity (${maxP} max).</strong>${suggest}`);
+  }
+
+  // ── Weight overload ──
+  if(wt>0 && wt>v.mw && v.mw<40000){
+    const overKg=(wt-v.mw).toLocaleString();
+    let suggest='';
+    if(v.id==='ram5500' && wt<=7983)
+      suggest=` Over by ${overKg} kg. → <strong>Switch to Ram 5500 + Gooseneck</strong> (7,983 kg trailer capacity).`;
+    else if(wt>7983)
+      suggest=` Over by ${overKg} kg. → <strong>3rd Party Carrier required</strong> for this load weight.`;
+    else
+      suggest=` Over by ${overKg} kg.`;
+    a('ae',`⚠️ <strong>Load weight ${wt.toLocaleString()} kg exceeds ${v.name} limit (${v.mw.toLocaleString()} kg).</strong>${suggest}`);
+  }
+
+  // ── GVW warning for Ram 5500 (GVW 5,450 kg — if load + truck approaches limit) ──
+  if(v.id==='ram5500' && wt>0){
+    const truckTare=5450-5352; // approx tare ~98kg margin (GVW minus payload)
+    // GVW is the combined truck+load limit; payload is what the truck can carry
+    // If wt > 5,000 kg warn they are approaching the GVW limit
+    if(wt>5000 && wt<=5352)
+      a('aw',`⚠️ Load weight ${wt.toLocaleString()} kg is near the Ram 5500 payload limit (5,352 kg / 11,800 lb). Verify GVW compliance before departure.`);
+  }
+
+  // ── Gooseneck balance warning when heavy ──
+  if(v.id==='goose' && wt>5000)
+    a('aw',"⚖️ Heavy load on gooseneck. Verify trailer axle ratings and ensure 60% of weight is forward of the axles. Check rented trailer's specific capacity rating.");
+
+  if(free) a('ao','✅ Delivery charge waived for this customer.');
+  if(km>300) a('aw','📍 Long haul (>300 km). Confirm road conditions, fuel stops, hours of service, and scheduling.');
+}
+
+// ══════════════════ QUOTE ══════════════════
+function newQuote(){
+  if(!confirm('Start a new quote? Current data will be cleared.')) return;
+  QC++; localStorage.setItem('ma_qc',QC);
+  ['cust-name','cust-contact','cust-address','order-notes','z-ref'].forEach(id=>G(id).value='');
+  ['km-dist','weight','order-val','pieces'].forEach(id=>G(id).value='');
+  G('pallets').value='0';
+  G('tog-rt').checked=true;
+  G('cust-province').value='AB';
+  ['tog-free','tog-split','tog-dsc'].forEach(id=>G(id).checked=false);
+  ['split-sec','dsc-sec'].forEach(id=>G(id).style.display='none');
+  splits=[]; _zId=null;
+  G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true; G('bol-attach-btn').disabled=true;
+  G('z-msg').textContent='';
+  setQDate();
+  G('b-bolnum').value='BOL-'+pad(QC);
+  calculate();
+}
+
+// ══════════════════ BOL ══════════════════
+function populateBOL(){
+  G('b-cname').value=V('cust-name');
+  G('b-caddr').value=V('cust-address');
+  G('b-cphone').value=V('cust-contact');
+  G('b-cprov').value=V('cust-province')||'AB';
+  G('b-date').value=V('deliv-date');
+  // BOL pieces = pallets (palletized) count; loose pieces shown in description
+  const pals=V('pallets')||'0', pcs=V('pieces')||'0';
+  G('b-pieces').value=pals;
+  G('b-weight').value=V('weight');
+  // Auto-build description from order notes + pieces info
+  const notes=V('order-notes');
+  const pcsNote=parseInt(pcs)>0?' · '+pcs+' loose piece'+(parseInt(pcs)!==1?'s':''):'';
+  G('b-desc').value=(notes?notes+'\n':'')+pals+' pallet'+(parseInt(pals)!==1?'s':'')+pcsNote+'.';
+  G('b-val').value=V('order-val');
+  G('b-sphone').value=S.phone;
+  if(window._C){G('b-fchg').value=_C.charge.toFixed(2);G('b-fsc').value=_C.fuel.toFixed(2);}
+}
+
+function goToBOL(){
+  populateBOL();
+  switchTab('bol',null);
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',i===1);});
+}
+
+// ══════════════════ ZOHO ══════════════════
+// Identical pattern to the Mane Attraction commission tracker:
+// Google Apps Script acts as CORS proxy. POST JSON with secret + action.
+// Content-Type: text/plain;charset=utf-8 avoids preflight. redirect:follow handles 302.
+const PROXY_URL    = 'https://script.google.com/macros/s/AKfycbxdb3_0bdokGINsi0YMRREHqk1L4p7BuJ39GrNqVKl_y81Ow_S7B2Pj3cOoLNfwYrVQ/exec';
+const PROXY_SECRET = 'MA_SECRET_2024';
+
+async function proxyRequest(action, params={}){
+  const payload = { secret: PROXY_SECRET, action, ...params };
+  const res = await fetch(PROXY_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const data = await res.json();
+  if(data.error) throw new Error(data.error);
+  return data;
+}
+
+function updateZSt(){
+  const d=G('zdot'), t=G('zstatus');
+  if(!d||!t) return;
+  if(PROXY_URL){d.className='zdot ok';t.textContent='Apps Script proxy configured';}
+  else{d.className='zdot';t.textContent='Proxy URL not set — see setup instructions';}
+}
+
+function clearZoho(){
+  _zId=null;
+  G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true; G('bol-attach-btn').disabled=true;
+  G('z-msg').textContent='';
+}
+function zmsg(txt,col){G('z-msg').style.color=col||'rgba(255,255,255,.7)';G('z-msg').textContent=txt;}
+
+async function zLookup(){
+  const ref=V('z-ref').trim();
+  if(!ref){zmsg('Enter a quote number first.','#ffaa55');return;}
+  if(!PROXY_URL){zmsg('Proxy URL not configured. See setup instructions.','#ff7070');return;}
+  zmsg('🔍 Looking up '+ref+'…');
+  try{
+    let r=await proxyRequest('zohoEstimateLookup',{estimateNumber:ref});
+    if(r.estimate_id){
+      _zId={type:'estimate',id:r.estimate_id,num:r.estimate_number,cust:r.customer_name};
+      zmsg('✅ Found: '+_zId.num+' — '+(_zId.cust||''),'#7fcc7f');
+      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
+      return;
+    }
+    // Try sales orders
+    r=await proxyRequest('zohoSalesOrderLookup',{salesOrderNumber:ref});
+    if(r.salesorder_id){
+      _zId={type:'salesorder',id:r.salesorder_id,num:r.salesorder_number,cust:r.customer_name};
+      zmsg('✅ Found sales order: '+_zId.num,'#7fcc7f');
+      G('z-push-btn').disabled=false; G('z-bol-btn').disabled=false; G('bol-attach-btn').disabled=false;
+      return;
+    }
+    zmsg('❌ Not found in Zoho. Check the number.','#ff7070');
+  }catch(e){zmsg('❌ '+e.message,'#ff7070');}
+}
+
+async function zPush(){
+  if(!_zId){zmsg('Lookup a quote first.','#ffaa55');return;}
+  if(!window._C){zmsg('Calculate a delivery first.','#ffaa55');return;}
+  const c=window._C;
+  zmsg('⬆️ Pushing trucking cost to Zoho…');
+  const rtLabel=c.rtOn?'×'+c.rt+' round trip':'×1 one-way';
+  const note=[
+    'Delivery Quote: Q-'+pad(QC),
+    'Vehicle: '+c.v.name,
+    'Route: Mayerthorpe, AB → '+(V('cust-address')||c.prov),
+    'Distance: '+c.km+' km one-way ('+rtLabel+')',
+    'Pallets: '+c.pals+(c.pcs>0?' · '+c.pcs+' loose pieces':''),
+    c.wt>0?'Est. Weight: '+c.wt.toLocaleString()+' kg':'',
+    'Delivery charge: $'+c.charge.toFixed(2)+' + GST ($'+c.gst.toFixed(2)+')',
+    'Fuel surcharge: $'+c.fuel.toFixed(2),
+    'Total incl. GST: $'+c.total.toFixed(2),
+    c.free?'** DELIVERY WAIVED **':''
+  ].filter(Boolean).join('\n');
+  try{
+    const r=await proxyRequest('zohoUpdateEstimateNotes',{
+      recordType: _zId.type,
+      recordId:   _zId.id,
+      notes:      note
+    });
+    if(r.updated||r.code===0) zmsg('✅ Trucking cost pushed to Zoho!','#7fcc7f');
+    else zmsg('❌ Zoho error: '+(r.message||JSON.stringify(r)),'#ff7070');
+  }catch(e){zmsg('❌ '+e.message,'#ff7070');}
+}
+
+async function zAttachBOL(){
+  if(!_zId){zmsg('Lookup a quote first.','#ffaa55');return;}
+  zmsg('📄 Generating BOL PDF…');
+  try{
+    populateBOL();
+    const bytes=buildBOLBytes();
+    zmsg('⬆️ Uploading BOL to Zoho via proxy…');
+    const b64=arrayBufferToBase64(bytes);
+    const r=await proxyRequest('zohoAttachPDF',{
+      recordType: _zId.type,
+      recordId:   _zId.id,
+      filename:   'BOL-'+pad(QC)+'.pdf',
+      fileBase64: b64
+    });
+    if(r.attached||r.code===0){
+      zmsg('✅ BOL attached to Zoho successfully!','#7fcc7f');
+      G('bol-attach-msg').textContent='✅ Attached — '+new Date().toLocaleTimeString();
+    } else zmsg('❌ '+(r.message||JSON.stringify(r)),'#ff7070');
+  }catch(e){zmsg('❌ '+e.message,'#ff7070');}
+}
+
+function arrayBufferToBase64(buffer){
+  let binary='';
+  const bytes=new Uint8Array(buffer);
+  for(let i=0;i<bytes.byteLength;i++) binary+=String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
+// ══════════════════ PDF — QUOTE ══════════════════
+function genQuotePDF(){
+  if(!window._C){alert('Enter a distance first.');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
+  const c=window._C, W=215.9, M=18; let y=0;
+
+  doc.setFillColor(44,26,14); doc.rect(0,0,W,28,'F');
+  doc.setTextColor(212,168,67); doc.setFontSize(18); doc.setFont('helvetica','bold');
+  doc.text('MANE ATTRACTION',M,12);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(200,190,170);
+  doc.text('Feed & Ranch Supply  ·  Mayerthorpe, AB T0E 1N0',M,18);
+  if(S.phone) doc.text(S.phone+(S.email?' · '+S.email:''),M,23);
+
+  const qn=V('quote-number');
+  doc.setFillColor(184,75,43); doc.roundedRect(W-M-45,6,45,16,3,3,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
+  doc.setFontSize(7); doc.text('DELIVERY QUOTE',W-M-22.5,13,{align:'center'});
+  doc.setFontSize(11); doc.text(qn,W-M-22.5,20,{align:'center'});
+
+  y=36; doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(130,120,110);
+  doc.text('Issued: '+new Date().toLocaleDateString('en-CA'),M,y);
+  doc.text('Delivery: '+(V('deliv-date')||'—'),M+55,y);
+  doc.text('Province: '+c.prov,M+120,y); y+=7;
+  doc.setDrawColor(212,168,67); doc.setLineWidth(0.5); doc.line(M,y,W-M,y); y+=7;
+
+  const cn=V('cust-name')||'—', ca=V('cust-address')||'—', cc=V('cust-contact')||'—';
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
+  doc.text('CUSTOMER',M,y); doc.text('VEHICLE / CARRIER',M+100,y); y+=5;
+  doc.setFont('helvetica','normal'); doc.setTextColor(44,26,14); doc.setFontSize(9);
+  doc.text(cn,M,y); doc.text(c.v.name,M+100,y); y+=5;
+  doc.setFontSize(8); doc.setTextColor(80,70,60);
+  doc.text(ca,M,y); doc.text('Max '+(c.v.id==='goose'?'8':c.v.mp)+' pallets',M+100,y); y+=4.5;
+  doc.text(cc,M,y); y+=8;
+  doc.setDrawColor(220,215,205); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=7;
+
+  const pcsVal=parseInt(V('pieces'))||0;
+  doc.autoTable({startY:y,head:[],margin:{left:M,right:M},
+    body:[
+      ['Route','Mayerthorpe, AB → '+(ca||c.prov)],
+      ['Distance (one-way)',c.km.toLocaleString()+' km'],
+      ['Round trip',c.rtOn?'Yes (×'+c.rt+')':'No (one-way only)'],
+      ['Pallets',V('pallets')||'0'],
+      ['Loose Pieces / Bags',pcsVal>0?String(pcsVal):'—'],
+      ['Est. Total Weight',V('weight')?V('weight')+' kg':'—'],
+      ['Order Value',c.oval>0?'$'+c.oval.toFixed(2):'—'],
+      ['Notes',V('order-notes')||'—'],
+    ],
+    styles:{fontSize:8.5,cellPadding:2.5,textColor:[44,26,14]},
+    columnStyles:{0:{fontStyle:'bold',cellWidth:65,textColor:[120,90,70]},1:{cellWidth:100}},
+    tableLineColor:[220,215,205],tableLineWidth:0.3});
+  y=doc.lastAutoTable.finalY+7;
+
+  const rows=[
+    ['Base km charge ('+c.km+' km × '+(c.rtOn?c.rt+'×RT':'1×OW')+' × $'+c.rpk.toFixed(2)+'/km)','$'+c.base.toFixed(2)],
+    ['Fuel surcharge','$'+c.fuel.toFixed(2)],
+  ];
+  if(c.bc>0) rows.push(['BC carbon premium (~15%)','$'+c.bc.toFixed(2)]);
+  if(c.split) rows.push(['Your share of split route ('+Math.round(c.frac*100)+'%)','']);
+  if(c.da>0) rows.push(['Discount'+(V('dsc-reason')?' — '+V('dsc-reason'):''),'−$'+c.da.toFixed(2)]);
+  if(c.free) rows.push(['DELIVERY WAIVED','$0.00']);
+  rows.push(['GST (5%)','$'+c.gst.toFixed(2)]);
+
+  doc.autoTable({startY:y,
+    head:[['Description','Amount']],
+    body:rows,
+    foot:[['TOTAL (CAD, incl. GST)','$'+c.total.toFixed(2)]],
+    margin:{left:M,right:M},
+    headStyles:{fillColor:[44,26,14],textColor:[212,168,67],fontSize:8,fontStyle:'bold'},
+    footStyles:{fillColor:[184,75,43],textColor:[255,255,255],fontSize:10,fontStyle:'bold'},
+    styles:{fontSize:8.5,cellPadding:2.8,textColor:[44,26,14]},
+    columnStyles:{0:{cellWidth:140},1:{cellWidth:37,halign:'right'}},
+    tableLineColor:[220,215,205],tableLineWidth:0.3});
+
+  doc.setDrawColor(184,75,43); doc.setLineWidth(0.5); doc.line(M,262,W-M,262);
+  doc.setFontSize(7); doc.setTextColor(130,120,110);
+  doc.text('Valid 14 days from issue. Rates subject to change with fuel costs.',M,267);
+  doc.text(S.biz+(S.gst?' · GST# '+S.gst:''),M,271);
+  if(S.email) doc.text(S.email,W-M,267,{align:'right'});
+
+  doc.save(qn+'_DeliveryQuote.pdf');
+}
+
+// ══════════════════ PDF — BOL ══════════════════
+function buildBOLBytes(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
+  const W=215.9, M=15; let y=0;
+  const g=id=>G(id)?.value||'';
+
+  const bnum=g('b-bolnum'), bdate=g('b-date'),
+    sn=g('b-sname'), sa=g('b-saddr'), sp=g('b-sphone'), sc=g('b-scontact'),
+    cn=g('b-cname'), ca=g('b-caddr'), cp=g('b-cphone'), cpv=g('b-cprov')||'AB',
+    car=g('b-carrier'), vu=g('b-unit'), drv=g('b-driver'),
+    pcs=g('b-pieces'), wt=g('b-weight'), desc=g('b-desc'),
+    fc=g('b-class'), dv=g('b-val'), pay=g('b-pay'),
+    fchg=g('b-fchg'), fsc=g('b-fsc'),
+    haz=G('b-hazmat')?.checked, ins=g('b-instr');
+
+  doc.setFillColor(44,26,14); doc.rect(0,0,W,28,'F');
+  doc.setTextColor(212,168,67); doc.setFontSize(17); doc.setFont('helvetica','bold');
+  doc.text('STRAIGHT BILL OF LADING',M,11);
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(200,190,170);
+  doc.text('Motor Carrier — Not Negotiable',M,17);
+  doc.text('Alberta Bill of Lading & Conditions of Carriage Regulation (AR 313/2002)',M,22);
+  doc.setFillColor(184,75,43); doc.roundedRect(W-M-50,6,50,16,3,3,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text('BOL NUMBER',W-M-25,13,{align:'center'});
+  doc.setFontSize(11); doc.text(bnum||'BOL-????',W-M-25,20,{align:'center'});
+
+  y=33; doc.setTextColor(44,26,14); doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+  doc.text('Ship Date: '+(bdate||'—'),M,y);
+  doc.text('Payment: '+(pay||'PREPAID').toUpperCase(),M+60,y);
+  if(haz){doc.setTextColor(184,75,43);doc.setFont('helvetica','bold');doc.text('⚠ HAZMAT — TDG DECLARATION REQUIRED',M+110,y);doc.setTextColor(44,26,14);doc.setFont('helvetica','normal');}
+  y+=7;
+
+  function box(title,left,right){
+    const bh=Math.max(left.length,right.length)*5+13;
+    doc.setDrawColor(184,75,43); doc.setLineWidth(0.4);
+    doc.rect(M,y,W-M*2,bh);
+    doc.line(M+(W-M*2)/2,y,M+(W-M*2)/2,y+bh);
+    doc.setFillColor(245,240,232); doc.rect(M,y,W-M*2,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(130,100,80);
+    doc.text(title,M+3,y+5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(44,26,14);
+    left.forEach((l,i)=>{if(l)doc.text(l,M+3,y+12+i*5);});
+    right.forEach((r,i)=>{if(r)doc.text(r,M+(W-M*2)/2+3,y+12+i*5);});
+    y+=bh+4;
+  }
+
+  box('SHIPPER (CONSIGNOR)                                                        CARRIER',
+    [sn,sa,'Tel: '+(sp||'—'),'Contact: '+(sc||'—')],
+    [car,'Unit: '+(vu||'—'),'Driver: '+(drv||'—')]);
+  box('CONSIGNEE (RECEIVER)',[cn,ca,'Province: '+cpv,'Tel: '+(cp||'—')],[]);
+
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
+  doc.text('FREIGHT DETAILS',M,y); y+=3;
+  doc.autoTable({startY:y,
+    head:[['Pieces/Pallets','Weight (kg)','Freight Class','Description of Goods','Hazmat?']],
+    body:[[pcs||'—',wt?(wt+' kg'):'—',fc||'—',desc||'—',haz?'YES — TDG':'No']],
+    margin:{left:M,right:M},
+    headStyles:{fillColor:[44,26,14],textColor:[212,168,67],fontSize:7.5,fontStyle:'bold'},
+    styles:{fontSize:8,cellPadding:3,textColor:[44,26,14]},
+    tableLineColor:[184,75,43],tableLineWidth:0.3});
+  y=doc.lastAutoTable.finalY+5;
+
+  doc.autoTable({startY:y,
+    head:[['Freight Charge','Fuel Surcharge','Total Charges','Declared Value']],
+    body:[['$'+(fchg||'0.00'),'$'+(fsc||'0.00'),'$'+((parseFloat(fchg||0)+parseFloat(fsc||0)).toFixed(2)),dv?'$'+parseFloat(dv).toFixed(2):'—']],
+    margin:{left:M,right:M},
+    headStyles:{fillColor:[74,48,32],textColor:[245,240,232],fontSize:7.5,fontStyle:'bold'},
+    styles:{fontSize:8.5,cellPadding:3,textColor:[44,26,14],fontStyle:'bold'},
+    tableLineColor:[184,75,43],tableLineWidth:0.3});
+  y=doc.lastAutoTable.finalY+5;
+
+  if(ins){
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
+    doc.text('SPECIAL INSTRUCTIONS',M,y); y+=4;
+    doc.setFont('helvetica','normal'); doc.setTextColor(44,26,14);
+    const il=doc.splitTextToSize(ins,W-M*2); doc.text(il,M,y); y+=il.length*4.5+4;
+  }
+
+  const ty=y+3;
+  doc.setFillColor(245,240,232); doc.rect(M,ty,W-M*2,22,'F');
+  doc.setDrawColor(184,75,43); doc.rect(M,ty,W-M*2,22);
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
+  doc.text('CONDITIONS OF CARRIAGE',M+3,ty+5);
+  doc.setFont('helvetica','normal'); doc.setTextColor(80,70,60);
+  const terms='The property described herein is in apparent good order, except as noted (contents and condition of packages unknown), marked, consigned, and destined as indicated, which the carrier agrees to carry to its usual place of delivery at the destination, subject to the Alberta Bill of Lading and Conditions of Carriage Regulation (AR 313/2002) and the federal Motor Vehicle Transport Act (RSC 1970 M-14). This bill of lading must be signed in full by the consignor and carrier.';
+  doc.text(doc.splitTextToSize(terms,W-M*2-6),M+3,ty+9);
+  y=ty+26;
+
+  const sy=y+3, sw=(W-M*2-8)/3;
+  ['SHIPPER SIGNATURE & DATE','CARRIER SIGNATURE & DATE','RECEIVER SIGNATURE & DATE'].forEach((lbl,i)=>{
+    const sx=M+i*(sw+4);
+    doc.setDrawColor(184,75,43); doc.rect(sx,sy,sw,22);
+    doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(130,100,80);
+    doc.text(lbl,sx+sw/2,sy+5,{align:'center'});
+    doc.setDrawColor(180,175,165); doc.line(sx+3,sy+16,sx+sw-3,sy+16);
+    doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(170,165,155);
+    doc.text('Sign above',sx+sw/2,sy+20,{align:'center'});
+  });
+
+  doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(150,140,130);
+  doc.text(S.biz+(S.gst?' · GST# '+S.gst:'')+' · '+S.addr,W/2,268,{align:'center'});
+
+  return doc.output('arraybuffer');
+}
+
+function genBOLPDF(){
+  const bytes=buildBOLBytes();
+  const blob=new Blob([bytes],{type:'application/pdf'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=(G('b-bolnum')?.value||'BOL')+'_BillOfLading.pdf';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ══════════════════ RESPONSIVE ══════════════════
+function layout(){
+  const el=G('calc-layout');
+  if(el) el.style.gridTemplateColumns=window.innerWidth<900?'1fr':'1fr 385px';
+}
+window.addEventListener('resize',layout);
+document.addEventListener('DOMContentLoaded',()=>{
+  try { init(); layout(); }
+  catch(e){
+    const b=document.getElementById('err-banner');
+    if(b){ b.style.display='block'; b.textContent='❌ Init error: '+e.message+'\n'+e.stack; }
+    console.error('Init failed:', e);
+  }
+});
+</script>
+</body>
+</html>
