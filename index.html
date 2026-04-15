@@ -998,7 +998,7 @@ async function zAttachBOL(){
     const r=await proxyRequest('zohoAttachPDF',{
       recordType: _zId.type,
       recordId:   _zId.id,
-      filename:   'BOL-'+pad(QC)+'.pdf',
+      filename:   'BOL-'+(window._zohoRef||new Date().toISOString().split('T')[0])+'.pdf',
       fileBase64: b64
     });
     if(r.attached||r.code===0){
