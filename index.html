@@ -141,8 +141,10 @@ input:checked+.slider::before{transform:translateX(18px)}
 <!-- ══ TAB 1: CALCULATOR ══ -->
 <div id="tab-calculator" class="panel active">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
-    <div><div class="qn" id="quote-number">Q-0001</div>
-    <div style="font-size:.8rem;color:#888;margin-top:.1rem" id="quote-date"></div></div>
+    <div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--soil)">Delivery Quote</div>
+      <div style="font-size:.8rem;color:#888;margin-top:.1rem" id="quote-date"></div>
+    </div>
     <button class="btn bs bsm" onclick="newQuote()">+ New Quote</button>
   </div>
 
@@ -448,7 +450,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 </div><!-- .main -->
 <script>
 // ══════════════════ STATE ══════════════════
-let QC = parseInt(localStorage.getItem('ma_qc')||'1');
+// Quote counter removed — BOL number entered manually
 let splits = [];
 let selV = 'ram5500';
 let _zId = null;
@@ -488,10 +490,9 @@ function init(){
   loadS(); setQDate(); renderVGrid(); renderVList(); calculate();
   const t=new Date().toISOString().split('T')[0];
   G('deliv-date').value=t; G('b-date').value=t;
-  G('b-bolnum').value='BOL-'+pad(QC);
+  // BOL number left blank — fill in manually for legal compliance
 }
 function setQDate(){
-  G('quote-number').textContent='Q-'+pad(QC);
   G('quote-date').textContent=new Date().toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
 function G(id){return document.getElementById(id)}
@@ -804,7 +805,6 @@ function renderAlerts(pals,pcs,wt,v,maxP,km,free){
 // ══════════════════ QUOTE ══════════════════
 function newQuote(){
   if(!confirm('Start a new quote? Current data will be cleared.')) return;
-  QC++; localStorage.setItem('ma_qc',QC);
   ['cust-name','cust-contact','cust-address','order-notes','z-ref'].forEach(id=>G(id).value='');
   ['km-dist','weight','order-val','pieces'].forEach(id=>G(id).value='');
   G('pallets').value='0';
@@ -816,7 +816,6 @@ function newQuote(){
   G('z-push-btn').disabled=true; G('z-bol-btn').disabled=true; G('bol-attach-btn').disabled=true;
   G('z-msg').textContent='';
   setQDate();
-  G('b-bolnum').value='BOL-'+pad(QC);
   calculate();
 }
 
@@ -850,7 +849,7 @@ function goToBOL(){
 // Identical pattern to the Mane Attraction commission tracker:
 // Google Apps Script acts as CORS proxy. POST JSON with secret + action.
 // Content-Type: text/plain;charset=utf-8 avoids preflight. redirect:follow handles 302.
-const PROXY_URL    = 'https://script.google.com/macros/s/AKfycbxdb3_0bdokGINsi0YMRREHqk1L4p7BuJ39GrNqVKl_y81Ow_S7B2Pj3cOoLNfwYrVQ/exec';
+const PROXY_URL    = 'https://script.google.com/macros/s/AKfycbyhkA9rhj0BTWAhqVgeedtOfRDrRpTnph_XbU9s9n7XREPuc0HNCf_-Vsv3mk6O194/exec';
 const PROXY_SECRET = 'MA_SECRET_2024';
 
 async function proxyRequest(action, params={}){
@@ -977,11 +976,11 @@ function genQuotePDF(){
   doc.text('Feed & Ranch Supply  ·  Mayerthorpe, AB T0E 1N0',M,18);
   if(S.phone) doc.text(S.phone+(S.email?' · '+S.email:''),M,23);
 
-  const qn=V('quote-number');
+  const qn=new Date().toLocaleDateString('en-CA');
   doc.setFillColor(184,75,43); doc.roundedRect(W-M-45,6,45,16,3,3,'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
   doc.setFontSize(7); doc.text('DELIVERY QUOTE',W-M-22.5,13,{align:'center'});
-  doc.setFontSize(11); doc.text(qn,W-M-22.5,20,{align:'center'});
+  doc.setFontSize(9); doc.text(qn,W-M-22.5,20,{align:'center'});
 
   y=36; doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(130,120,110);
   doc.text('Issued: '+new Date().toLocaleDateString('en-CA'),M,y);
